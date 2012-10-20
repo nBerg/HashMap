@@ -1,35 +1,36 @@
-/* imports */
+import x10.util.ArrayList;
 
 public class HashMap {
-	private val DEFUALT_CAPACITY = 16;
+
+	private val DEFAULT_CAPACITY = 16;
 	private val DEFAULT_LOAD = 0.75;
 
 	private var tableSize:Int;
 	private val maxLoadFactor:Float;
-	val hashTable:Rail[ArrayList];
+	val hashMap:Rail[ArrayList[Entry]];
 
 	private var entryCount:Int;
 	private var curLoadFactor:Float;
 
-	public def this(tableSize:Int, loadFactor:Float) {
-		this.tableSize = tableSize;
+	public def this(size:Int, loadFactor:Float) {
+		tableSize = size;
 		maxLoadFactor = loadFactor;
-		hashMap = new Rail[ArrayList](tableSize);
+		hashMap = new Rail[ArrayList[Entry]](tableSize);
 		entryCount = 0;
 		curLoadFactor = 0;
 
-		for (var i:Int = 0; i < hashMap.size; i+)
-			hashMap(i) = new ArrayList();
+		for (var i:Int = 0; i < hashMap.size; i++)
+			hashMap(i) = new ArrayList[Entry]();
 	}
 	
-	public def this(tableSize:Int) {
-		this(tableSize, DEFAULT_LOAD);
+/*	public def this(size:Int) {
+		this(size, 0.75);
 	}
 
 	public def this() {
-		this(DEFAULT_CAPACITY, DEFAULT_LOAD);
+		this(16, 0.75);
 	}
-
+*/
 	public def isEmpty() {
 		return (entryCount == 0);
 	}
@@ -48,30 +49,46 @@ public class HashMap {
 
 	public def hashCode(key:String) {
 		var hashVal:Int = 0;
-		for (int i = 0; i < key.length; i++)
-			hashVal = 37 * hashVal + key.charAt(i);
+		for (var i:Int = 0; i < key.length(); i++);
+//			hashVal = 37 * hashVal + (Char as Int)key.charAt(i);
 
-		return hash(hashVal);
+		return hashCode(hashVal);
+	}
+
+	public def add(key:String, value:Any) {
+		val index = hashCode(key);
+		add(key, index, value);
 	}
 
 	/* Not sure if I'm doing generic typing correctly */
 	public def add(key:Int, value:Any) {
 		val index = hashCode(key);
+		add(key, index, value);
+	}
+
+	private def add(key:Any, index:Int, value:Any) {
 		val entry = new Entry(key, value);
 		hashMap(index).add(entry);
 
 		entryCount++;
 		curLoadFactor = entryCount/tableSize;
 
-		/* Not implemented yet */
 		/* if (curLoadFactor > maxLoadFactor)
 			rehash();
 		*/
 	}
 
-	public def get(key:Any) {
+	public def get(key:Int) {
 		val index = hashCode(key);
+		return get(key, index);
+	}
 
+	public def get(key:String) {
+		val index = hashCode(key);
+		return get(key, index);
+	}
+
+	private def get(key:Any, index:Int) {
 		val bucket = hashMap(index);
 		var entry:Entry;
 
@@ -84,10 +101,18 @@ public class HashMap {
 		/* Key not found */
 		return null;
 	}
-
-	public def remove(key:Any) {
+	
+	public def remove(key:Int) {
 		val index = hashCode(key);
+		remove(key, index);
+	}
 
+	public def remove(key:String) {
+		val index = hashCode(key);
+		remove(key, index);
+	}
+
+	public def remove(key:Any, index:Int) {
 		val bucket = hashMap(index);
 		var entry:Entry;
 
@@ -101,8 +126,8 @@ public class HashMap {
 		}
 	}
 
-	pubic def clear() {
-		for (var i:Int = 0; i < hashMap.size(); i++)
+	public def clear() {
+		for (var i:Int = 0; i < hashMap.size; i++)
 			hashMap(i).clear();
 		entryCount = 0;
 	}
@@ -111,10 +136,10 @@ public class HashMap {
 
 
 	private class Entry {
-		private val key;
-		private val value;
+		private val key:Any;
+		private val value:Any;
 
-		public def this(key, value) {
+		public def this(key:Any, value:Any) {
 			this.key = key;
 			this.value = value;
 		}
@@ -127,4 +152,8 @@ public class HashMap {
 			return value;
 		}
 	}	
+
+	public static def main(args:Rail[String]) {
+		return;
+	}
 }
