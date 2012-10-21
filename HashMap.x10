@@ -1,9 +1,14 @@
+import x10.io.Console; 
+import x10.lang.String;
 import x10.util.ArrayList;
 
 public class HashMap {
 
 	private val DEFAULT_CAPACITY = 16;
 	private val DEFAULT_LOAD = 0.75;
+	private val FLOAT_CONST = 1.0f; /* the curLoadFactor was printing out correctly 
+					     * so I needed to multiply by this constant
+					     */
 
 	private var tableSize:Int;
 	private val maxLoadFactor:Float;
@@ -60,7 +65,7 @@ public class HashMap {
 		add(key, index, value);
 	}
 
-	/* Not sure if I'm doing generic typing correctly */
+	/* Not sure if I'm doing generic typing correctly -> you are indeed*/
 	public def add(key:Int, value:Any) {
 		val index = hashCode(key);
 		add(key, index, value);
@@ -71,7 +76,8 @@ public class HashMap {
 		hashMap(index).add(entry);
 
 		entryCount++;
-		curLoadFactor = entryCount/tableSize;
+		curLoadFactor = (entryCount*FLOAT_CONST)/tableSize;
+		Console.OUT.println("lf: " + curLoadFactor);
 
 		/* if (curLoadFactor > maxLoadFactor)
 			rehash();
@@ -94,8 +100,23 @@ public class HashMap {
 
 		for (var i:Int = 0; i < bucket.size(); i++) {
 			entry = bucket(i);
-			if (entry.getKey() == key)
-				return entry.getValue();
+			val entryKey = entry.getKey();
+			Console.OUT.println("ekey: " + entryKey);
+			/* The == doesn't compare the strings correctly so
+			 * you have to use the Any type function equals for
+			 * comparison. Didn't work with strings for some
+			 * I dont' know. What I have below works perfectly fine
+			 * I'll come back later to this	
+			 */
+			if(entryKey instanceof String){
+				if(entryKey.toString().compareTo(key as String) == 0){
+					Console.OUT.println("I'm an String");
+					return entryKey;
+				}
+			}else if (entryKey.equals(key)){
+				Console.OUT.println("I'm an Int");
+				return entryKey;
+			}
 		}
 
 		/* Key not found */
@@ -114,6 +135,10 @@ public class HashMap {
 
 	public def remove(key:Any, index:Int) {
 		val bucket = hashMap(index);
+		if(bucket.isEmpty()){
+			Console.OUT.println("Removing an element that doesn't exist! Y u crazy?");
+			return;
+		}
 		var entry:Entry;
 
 		for (var i:Int = 0; i < bucket.size(); i++) {
@@ -121,7 +146,7 @@ public class HashMap {
 			if (entry.getKey() == key) {
 				bucket.remove(entry);
 				entryCount--;
-				curLoadFactor = entryCount/tableSize;
+				curLoadFactor = (entryCount*FLOAT_CONST)/tableSize;
 			}
 		}
 	}
@@ -132,8 +157,22 @@ public class HashMap {
 		entryCount = 0;
 	}
 
+	public def getLoad(){
+		return curLoadFactor;
+	}
 
+	public def search(){
+		Console.OUT.println("Key\tValue");
+		var entry:Entry;
+		for(var i:Int = 0; i< tableSize; i++){
+			val bucket = hashMap(i);
+			for(var j:Int = 0; j < bucket.size(); j++){
+				entry = bucket(j);
+				Console.OUT.println(entry.getKey() + "\t" + entry.getValue());
+			}
+		}
 
+	}
 
 	private class Entry {
 		private val key:Any;
@@ -154,6 +193,17 @@ public class HashMap {
 	}	
 
 	public static def main(args:Rail[String]) {
+		var map:HashMap = new HashMap(16, 0.75f);
+		map.add("cat", "Meow");
+		map.add("cat", "Roar");
+		Console.OUT.println("returned: " + map.get("cat"));
+		Console.OUT.println(map.getLoad());
+		map.add(1, 20);
+		map.search();
+		/*Console.OUT.println("returned: " + map.get(1));
+		Console.OUT.println(map.getLoad());
+		map.remove(2);
+		map.remove(1);*/
 		return;
 	}
 }
