@@ -4,7 +4,7 @@ X10C=${X10_HOME}/bin/x10c++
 
 FLAGS=-VERBOSE_CHECKS=TRUE -O -NO_CHECKS -noassert -cxx-prearg -O2
 
-SRCS=src/HashMap.x10 src/SerialPerformanceTest.x10
+SRCS=HashMap.x10 SerialPerformanceTest.x10
 
 EXES=$(SRCS:.x10=)
 

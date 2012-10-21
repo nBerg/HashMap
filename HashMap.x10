@@ -3,12 +3,12 @@ import x10.lang.String;
 import x10.util.ArrayList;
 
 public class HashMap {
-
+ 
 	private val DEFAULT_CAPACITY = 16;
 	private val DEFAULT_LOAD = 0.75;
 	private val FLOAT_CONST = 1.0f; /* the curLoadFactor was printing out correctly 
 					     * so I needed to multiply by this constant
-					     */  
+					     */   
 
 	private var tableSize:Int;
 	private val maxLoadFactor:Float;
@@ -73,11 +73,14 @@ public class HashMap {
 
 	private def add(key:Any, index:Int, value:Any) {
 		val entry = new Entry(key, value);
-		hashMap(index).add(entry);
+		
+		//atomic {
+			hashMap(index).add(entry);
 
-		entryCount++;
-		curLoadFactor = (entryCount*FLOAT_CONST)/tableSize;
-		Console.OUT.println("lf: " + curLoadFactor);
+			entryCount++;
+			curLoadFactor = (entryCount*FLOAT_CONST)/tableSize;
+		//}
+		//Console.OUT.println("lf: " + curLoadFactor);
 
 		/* if (curLoadFactor > maxLoadFactor)
 			rehash();
@@ -95,30 +98,32 @@ public class HashMap {
 	}
 
 	private def get(key:Any, index:Int) {
-		val bucket = hashMap(index);
-		var entry:Entry;
-
-		for (var i:Int = 0; i < bucket.size(); i++) {
-			entry = bucket(i);
-			val entryKey = entry.getKey();
-			Console.OUT.println("ekey: " + entryKey);
-			/* The == doesn't compare the strings correctly so
-			 * you have to use the Any type function equals for
-			 * comparison. Didn't work with strings for some
-			 * I dont' know. What I have below works perfectly fine
-			 * I'll come back later to this	
-			 */
-			if(entryKey instanceof String){
-				if(entryKey.toString().compareTo(key as String) == 0){
-					Console.OUT.println("I'm an String");
+		
+		//atomic {
+			val bucket = hashMap(index);
+			var entry:Entry;
+	
+			for (var i:Int = 0; i < bucket.size(); i++) {
+				entry = bucket(i);
+				val entryKey = entry.getKey();
+				//Console.OUT.println("ekey: " + entryKey);
+				/* The == doesn't compare the strings correctly so
+				 * you have to use the Any type function equals for
+				 * comparison. Didn't work with strings for some
+				 * I dont' know. What I have below works perfectly fine
+				 * I'll come back later to this	
+				 */
+				if(entryKey instanceof String){
+					if(entryKey.toString().compareTo(key as String) == 0){
+						Console.OUT.println("I'm an String");
+						return entryKey;
+					}
+				}else if (entryKey.equals(key)){
+					//Console.OUT.println("I'm an Int");
 					return entryKey;
 				}
-			}else if (entryKey.equals(key)){
-				Console.OUT.println("I'm an Int");
-				return entryKey;
 			}
-		}
-
+		//}
 		/* Key not found */
 		return null;
 	}
@@ -134,21 +139,23 @@ public class HashMap {
 	}
 
 	public def remove(key:Any, index:Int) {
-		val bucket = hashMap(index);
-		if(bucket.isEmpty()){
-			Console.OUT.println("Removing an element that doesn't exist! Y u crazy?");
-			return;
-		}
-		var entry:Entry;
-
-		for (var i:Int = 0; i < bucket.size(); i++) {
-			entry = bucket(i);
-			if (entry.getKey() == key) {
-				bucket.remove(entry);
-				entryCount--;
-				curLoadFactor = (entryCount*FLOAT_CONST)/tableSize;
+		//atomic{
+			val bucket = hashMap(index);
+			if(bucket.isEmpty()){
+				Console.OUT.println("Removing an element that doesn't exist! Y u crazy?");
+				return;
 			}
-		}
+			var entry:Entry;
+	
+			for (var i:Int = 0; i < bucket.size(); i++) {
+				entry = bucket(i);
+				if (entry.getKey() == key) {
+					bucket.remove(entry);
+					entryCount--;
+					curLoadFactor = (entryCount*FLOAT_CONST)/tableSize;
+				}
+			}
+		//}
 	}
 
 	public def clear() {
@@ -173,6 +180,14 @@ public class HashMap {
 		}
 
 	}
+	
+	public def toString():String{
+		var str:String = "";
+		for( var i:Int = 0; i < hashMap.size; i++){
+			str += hashMap(i) + " ";
+		}
+		return str;
+	}
 
 	private class Entry {
 		private val key:Any;
@@ -189,6 +204,10 @@ public class HashMap {
 
 		public getValue() {
 			return value;
+		}
+		
+		public def toString():String{
+			return "["+key+","+value+"]";
 		}
 	}	
 
