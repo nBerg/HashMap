@@ -6,7 +6,7 @@ EXES=$(SRCS:.x10=)
 
 perftests: SerialPerformanceTest.x10 HashMap.x10
 	$(X10C) $(FLAGS) -o SerialPerformanceTest SerialPerformanceTest.x10
-	./SerialPerformanceTest 5000 10 16
+	./SerialPerformanceTest 50000 10 16
 
 functests: SerialFunctionTest.x10 HashMap.x10
 	$(X10C) $(FLAGS) -o SerialFunctionTest SerialFunctionTest.x10
