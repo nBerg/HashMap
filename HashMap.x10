@@ -16,14 +16,17 @@ public class HashMap[K, V] {
 	private var timesRehashed:Int;
 	private var numOfCollisions:Int;
 
+	/* Constructor with tableSize from user */
 	public def this(tableSize:Int) {
 		this[K, V](tableSize, 0.75f);
 	}
-
+	
+	/* Default Constructor */
 	public def this() {
 		this[K, V](16, .75f);
 	}
 
+	/* Initialize our data */
 	public def this(tableSize:Int, loadFactor:Float) {
 		this.tableSize = tableSize;
 		maxLoadFactor = loadFactor;
@@ -37,14 +40,19 @@ public class HashMap[K, V] {
 			hashMap(i) = new ArrayList[Entry[K, V]]();
 	}
 
+	/* Test if map is empty */
 	public def isEmpty() {
 		return (entryCount == 0);
 	}
 
+	/* Get map size */
 	public def size() {
 		return entryCount;
 	}
 
+	/* Hashing function. Each key gets it's own hashCode,
+	 * but different items may return the same hashVal
+	 */
 	public def hash(key:K) {
 		var hashVal:Int = key.hashCode() % tableSize;
 		if (hashVal < 0)
@@ -53,6 +61,10 @@ public class HashMap[K, V] {
 		return hashVal;
 	}
 
+	/* Add a key with a value to the map
+	 * Items with same hashVal are indexed
+	 * to the same bucket
+	 */
 	public def add(key:K, value:V) {
 		val index = hash(key);
 		val entry = new Entry[K, V](key, value);
@@ -72,6 +84,9 @@ public class HashMap[K, V] {
 
 	}
 
+	/* Return item user is looking for
+	 * Returns null if not found 
+	 */
 	public def get(key:K) {
 		if (isEmpty())
 			return null;
@@ -90,6 +105,7 @@ public class HashMap[K, V] {
 		return null;
 	}
 
+	/* Tests if map contains key */
 	public def contains(key:K) {
 		if (isEmpty())
 			return false;
@@ -111,6 +127,7 @@ public class HashMap[K, V] {
 		return false;
 	}
 
+	/* Remove the key from the map bucket*/
 	public def remove(key:K) {
 		if (isEmpty())
 			return;
@@ -132,6 +149,7 @@ public class HashMap[K, V] {
 		}
 	}
 
+	
         private def rehash() {
                 tableSize *= 2;
 		timesRehashed++;
@@ -154,6 +172,7 @@ public class HashMap[K, V] {
                 hashMap = temp;
         }
 
+	/* Empty out the map */
 	public def clear() {
 		if (isEmpty())
 			return;
@@ -164,6 +183,7 @@ public class HashMap[K, V] {
 		curLoadFactor = (entryCount as Float)/tableSize;
 	}
 
+	/* Display map */
 	public def printMap(){
 		Console.OUT.println("Key\tValue");
 		var entry:Entry[K, V];
@@ -189,6 +209,7 @@ public class HashMap[K, V] {
 		return numOfCollisions;
 	}
 
+	/* Print map stats */
 	public def getStats(){
 		var statStr:String = "";
 		statStr += "Stats:\n";
@@ -209,6 +230,9 @@ public class HashMap[K, V] {
 		return str;
 	}
 
+	/* Entry class containing key and value data as
+	 * as generic types
+	 */
 	private class Entry[K, V] {
 		private val key:K;
 		private val value:V;
