@@ -6,10 +6,6 @@ public class HashMap[K, V] {
 
 	private val DEFAULT_CAPACITY = 16;
 	private val DEFAULT_LOAD = 0.75f;
-	//	private val FLOAT_CONST = 1.0f; 
-	/* the curLoadFactor was printing out correctly 
-	 * so I needed to multiply by this constant
-	 */   
 
 	private var tableSize:Int;
 	private val maxLoadFactor:Float;
@@ -17,7 +13,7 @@ public class HashMap[K, V] {
 
 	private var entryCount:Int;
 	private var curLoadFactor:Float;
- 
+
 
 	public def this(tableSize:Int) {
 		this[K, V](tableSize, 0.75f);
@@ -26,7 +22,7 @@ public class HashMap[K, V] {
 	public def this() {
 		this[K, V](16, .75f);
 	}
-	
+
 	public def this(tableSize:Int, loadFactor:Float) {
 		this.tableSize = tableSize;
 		maxLoadFactor = loadFactor;
@@ -64,9 +60,9 @@ public class HashMap[K, V] {
 		entryCount++;
 		curLoadFactor = (entryCount as Float)/(tableSize as Float);
 
-		/* if (curLoadFactor > maxLoadFactor)
-		   rehash();
-		 */
+		if (curLoadFactor > maxLoadFactor)
+			rehash();
+
 	}
 
 	public def get(key:K) {
@@ -128,14 +124,14 @@ public class HashMap[K, V] {
 			}
 		}
 	}
-	
+
 	private def rehash(){
-		
+
 		tableSize *= 2;
 		val temp = new Rail[ArrayList[Entry[K, V]]](tableSize);
 		for (var i:Int = 0; i < temp.size; i++)
 			temp(i) = new ArrayList[Entry[K, V]]();
-		
+
 		for( var i:Int = 0; i < hashMap.size; i++){
 			val element:ArrayList[Entry[K,V]] = hashMap(i);
 			for( var j:Int = 0; j < element.size(); i++){
@@ -143,7 +139,7 @@ public class HashMap[K, V] {
 				val index = (entry.getKey() as Int) % tableSize;
 				temp(index).add(entry);
 			}
-			
+
 		}
 		curLoadFactor = (entryCount*1.0f)/tableSize;
 		hashMap = temp;
