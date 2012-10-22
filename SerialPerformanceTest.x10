@@ -12,7 +12,7 @@ public class SerialPerformanceTest {
 		val len = Int.parseInt(args(0));
 		val tests = Int.parseInt(args(1));
 		val asyncNum = Int.parseInt(args(2));
-		
+		 
 		val r = new Random();
 		
 		
@@ -23,8 +23,9 @@ public class SerialPerformanceTest {
 			for( var i:Int = 0; i < tests; i++){
 				val map:HashMap = new HashMap(len, 0.75f);
 				val begin = Timer.milliTime(); 
-				 finish for( var j:Int = 0; j < asyncNum; j++ ){
-					async {
+				 finish for( var j:Int = 0; j < asyncCount; j++ ){
+					 val final_j = j;
+					 async {
 						for( var k:Int = 0; k < len; k++ ){
 							atomic map.add(r.nextInt(len),"test"+k);
 						}
@@ -48,11 +49,11 @@ public class SerialPerformanceTest {
 			for( var i:Int = 0; i < tests; i++){
 				val map:HashMap = new HashMap(len, 0.75f);
 				val begin = Timer.milliTime(); 
-				finish for( var j:Int = 0; j < asyncNum; j++ ){
+				finish for( var j:Int = 0; j < asyncCount; j++ ){
 					async {
 						for( var k:Int = 0; k < len; k++ ){
 							atomic map.get(r.nextInt(len));
-						}
+						} 
 					}
 				}
 				val end = Timer.milliTime();
@@ -72,7 +73,7 @@ public class SerialPerformanceTest {
 			for( var i:Int = 0; i < tests; i++){
 				val map:HashMap = new HashMap(len, 0.75f);
 				val begin = Timer.milliTime(); 
-				finish for( var j:Int = 0; j < asyncNum; j++ ){
+				finish for( var j:Int = 0; j < asyncCount; j++ ){
 					async {
 						for( var k:Int = 0; k < len; k++ ){
 							atomic map.add(r.nextInt(len),"test"+k);
