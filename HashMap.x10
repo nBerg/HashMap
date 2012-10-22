@@ -9,7 +9,7 @@ public class HashMap[K, V] {
 
 	private var tableSize:Int;
 	private val maxLoadFactor:Float;
-	var hashMap:Rail[ArrayList[Entry[K, V]]]; 
+	private var hashMap:Rail[ArrayList[Entry[K, V]]]; 
 
 	private var entryCount:Int;
 	private var curLoadFactor:Float;
@@ -129,26 +129,27 @@ public class HashMap[K, V] {
 		}
 	}
 
-	private def rehash(){
-		tableSize *= 2;
-		val temp = new Rail[ArrayList[Entry[K, V]]](tableSize);
-		for (var i:Int = 0; i < temp.size; i++)
-			temp(i) = new ArrayList[Entry[K, V]]();
-
-		for( var i:Int = 0; i < hashMap.size; i++){
-			val element:ArrayList[Entry[K,V]] = hashMap(i);
-			for( var j:Int = 0; j < element.size(); i++){
-				val entry = element(j);
-				val index = (entry.getKey() as Int) % tableSize;
-				temp(index).add(entry);
-			}
-
-		}
-		curLoadFactor = (entryCount*1.0f)/tableSize;
-		hashMap = temp;
+        private def rehash() {
+                tableSize *= 2;
 		timesRehashed++;
-	}
 
+                val temp = new Rail[ArrayList[Entry[K, V]]](tableSize);
+                for (var i:Int = 0; i < temp.size; i++)
+                        temp(i) = new ArrayList[Entry[K, V]]();
+
+                for( var i:Int = 0; i < hashMap.size; i++) {
+                        val bucket = hashMap(i);
+                        for( var j:Int = 0; j < bucket.size(); j++) {
+                                val entry = bucket(j);
+                                val index = hash(entry.getKey());
+                                temp(index).add(entry);
+                        }
+
+                }
+
+                curLoadFactor = (entryCount as Float)/tableSize;
+                hashMap = temp;
+        }
 
 	public def clear() {
 		if (isEmpty())
@@ -173,13 +174,28 @@ public class HashMap[K, V] {
 
 	}
 
+	public def getLoad() {
+		return curLoadFactor;
+	}
+
+	public def getTableSize() {
+		return tableSize;
+	}
+
+	public def getNumCollisions() {
+		return numOfCollisions;
+	}
+
 	public def getStats(){
-		Console.OUT.println("Stats");
-		Console.OUT.println("TableSize:\t" + tableSize);
-		Console.OUT.println("Total No. of Entries:\t" + entryCount);
-		Console.OUT.println("Total No. of Collision:\t" + numOfCollisions);
-		Console.OUT.println("Avg No. of Entries per Bucket:\t" + (entryCount*1.0f)/tableSize);
-		Console.OUT.println("Current Load Factor (CLF):\t" + curLoadFactor);
+		var statStr:String = "";
+		statStr += "Stats:\n";
+		statStr += "TableSize:\t" + tableSize + "\n";
+		statStr += "Total No. of Entries:\t" + entryCount + "\n";
+		statStr += "Total No. of Collision:\t" + numOfCollisions + "\n";
+		statStr += String.format("Current Load Factor (CLF):\t%.4f\n", new Array[Any](1,curLoadFactor));
+		statStr += "Times rehashed:\t" + timesRehashed + "\n";
+		
+		return statStr;
 	}
 
 	public def toString():String{

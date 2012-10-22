@@ -1,5 +1,6 @@
 import x10.io.Console;
 import x10.lang.String;
+import x10.util.Random;
 
 public class SerialFunctionTest {
 
@@ -8,8 +9,7 @@ public class SerialFunctionTest {
                 var map:HashMap[String, String] = new HashMap[String, String]();
 
 		Console.OUT.println("Map is Empty: " + map.isEmpty());
-		Console.OUT.println("Size of map: " + map.size());
-		Console.OUT.println("Load factor of map: " + map.getLoad());
+		Console.OUT.println(map.getStats());
 		Console.OUT.println();
 
                 map.add("Cat", "Meow");
@@ -25,8 +25,7 @@ public class SerialFunctionTest {
 		Console.OUT.println();
 
 		Console.OUT.println("Map is empty: " + map.isEmpty());
-		Console.OUT.println("Size of map: " + map.size());
-		Console.OUT.println("Load factor of map: " + map.getLoad());
+		Console.OUT.println(map.getStats());
 		Console.OUT.println();
 
 		Console.OUT.println("Map: " + map.toString());
@@ -45,15 +44,22 @@ public class SerialFunctionTest {
 		Console.OUT.println("Rmoved 'Dog' from map");
 		Console.OUT.println("Map contains key 'Lion': " + map.contains("Lion"));
 		Console.OUT.println("Map contains key 'Cat': " + map.contains("Cat"));
-		Console.OUT.println("Size of map: " + map.size());
-		Console.OUT.println("Load factor of map: " + map.getLoad());
+		Console.OUT.println(map.getStats());
 		Console.OUT.println();
 
 		map.clear();
 		Console.OUT.println("Cleared map");
 		Console.OUT.println("Map is empty: " + map.isEmpty());
-		Console.OUT.println("Size of map: " + map.size());
-		Console.OUT.println("Load factor of map: " + map.getLoad());
+		Console.OUT.println(map.getStats());
+		Console.OUT.println();
+
+		var intMap:HashMap[Int, Int] = new HashMap[Int,Int](25, .75f);
+		val r = new Random();
+		for (var i:Int = 0; i <= 50; i++)
+			intMap.add(i, r.nextInt());
+
+		Console.OUT.println("Added integers 0-50 to intMap");
+		Console.OUT.println(intMap.getStats());
 
         }
 }
