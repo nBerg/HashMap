@@ -21,6 +21,11 @@ public class SerialFunctionTest {
 		Console.OUT.println("Added (Lion, Roar) to Map");
 		Console.OUT.println("Map contains key 'Lion': " + map.contains("Lion"));
 		Console.OUT.println();
+		Console.OUT.println("Map contains key 'Rabbit': " + map.contains("Rabbit"));
+		Console.OUT.println();
+
+		map.add("Dog", "Bark");
+		Console.OUT.println("Added (Dog, Bark) to map");
 		Console.OUT.println("Map contains key 'Dog': " + map.contains("Dog"));
 		Console.OUT.println();
 
@@ -28,7 +33,7 @@ public class SerialFunctionTest {
 		Console.OUT.println(map.getStats());
 		Console.OUT.println();
 
-		Console.OUT.println("Map: " + map.toString());
+		Console.OUT.println("Map: " + map);
 		Console.OUT.println("Map: ");
 		map.printMap();
 		Console.OUT.println();
@@ -36,14 +41,24 @@ public class SerialFunctionTest {
                 Console.OUT.println("Value of 'Cat': " + map.get("Cat"));
 		Console.OUT.println("Value of 'Lion': " + map.get("Lion"));
 		Console.OUT.println("Value of 'Dog': " + map.get("Dog"));
+		Console.OUT.println("Value of 'Rabbit': " + map.get("Rabbit"));
 		Console.OUT.println();
 
-		map.remove("Lion");
-		Console.OUT.println("Removed 'Lion' from map");
+		map.add("Cat", "Mew");
+		Console.OUT.println("Added (Cat, Mew) to map");
+		Console.OUT.println("Value of 'Cat': " + map.get("Cat"));
+		Console.OUT.println("Map: " + map);
+		Console.OUT.println();
+
+		map.remove("Cat");
+		Console.OUT.println("Removed 'Cat' from map");
 		map.remove("Dog");
-		Console.OUT.println("Rmoved 'Dog' from map");
+		Console.OUT.println("Removed 'Dog' from map");
+		map.remove("Rabbit");
+		Console.OUT.println("Removed 'Rabbit' from map");
 		Console.OUT.println("Map contains key 'Lion': " + map.contains("Lion"));
 		Console.OUT.println("Map contains key 'Cat': " + map.contains("Cat"));
+		Console.OUT.println("Map contains key 'Dog': " + map.contains("Dog"));
 		Console.OUT.println(map.getStats());
 		Console.OUT.println();
 
@@ -55,10 +70,10 @@ public class SerialFunctionTest {
 
 		var intMap:HashMap[Int, Int] = new HashMap[Int,Int](25, .75f);
 		val r = new Random();
-		for (var i:Int = 0; i <= 50; i++)
-			intMap.add(i, r.nextInt());
+		for (var i:Int = 0; i < 50; i++)
+			intMap.add(r.nextInt(), r.nextInt());
 
-		Console.OUT.println("Added integers 0-50 to intMap");
+		Console.OUT.println("Added 50 random int pairs to intMap");
 		Console.OUT.println(intMap.getStats());
 
         }

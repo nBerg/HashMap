@@ -57,6 +57,9 @@ public class HashMap[K, V] {
 		val index = hash(key);
 		val entry = new Entry[K, V](key, value);
 
+		/* Remove any duplicate keys */
+		remove(key);
+
 		hashMap(index).add(entry);
 		if(hashMap(index).size() > 1){
 			numOfCollisions++;
