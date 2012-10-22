@@ -25,7 +25,7 @@ public class SerialPerformanceTest {
 				val begin = Timer.milliTime(); 
 				 finish for( var j:Int = 0; j < asyncCount; j++ ){
 					 async {
-						for( var k:Int = 0; k < len; k++ ){
+						for( var k:Int = 0; k < len/asyncNum; k++ ){
 							atomic map.add(r.nextInt(len),"test"+k);
 						}
 					}
@@ -50,7 +50,7 @@ public class SerialPerformanceTest {
 				val begin = Timer.milliTime(); 
 				finish for( var j:Int = 0; j < asyncCount; j++ ){
 					async {
-						for( var k:Int = 0; k < len; k++ ){
+						for( var k:Int = 0; k < len/asyncNum; k++ ){
 							atomic map.get(r.nextInt(len));
 						} 
 					}
@@ -74,7 +74,7 @@ public class SerialPerformanceTest {
 				val begin = Timer.milliTime(); 
 				finish for( var j:Int = 0; j < asyncCount; j++ ){
 					async {
-						for( var k:Int = 0; k < len; k++ ){
+						for( var k:Int = 0; k < len/asyncNum; k++ ){
 							atomic map.add(r.nextInt(len),"test"+k);
 							atomic map.get(r.nextInt(len));
 						}
