@@ -13,7 +13,8 @@ public class HashMap[K, V] {
 
 	private var entryCount:Int;
 	private var curLoadFactor:Float;
-
+	private var timesRehashed:Int;
+	private var numOfCollisions:Int;
 
 	public def this(tableSize:Int) {
 		this[K, V](tableSize, 0.75f);
@@ -30,6 +31,7 @@ public class HashMap[K, V] {
 		hashMap = new Rail[ArrayList[Entry[K, V]]](tableSize);
 		entryCount = 0;
 		curLoadFactor = 0;
+		timesRehashed = 0;
 
 		for (var i:Int = 0; i < hashMap.size; i++)
 			hashMap(i) = new ArrayList[Entry[K, V]]();
@@ -56,7 +58,9 @@ public class HashMap[K, V] {
 		val entry = new Entry[K, V](key, value);
 
 		hashMap(index).add(entry);
-
+		if(hashMap(index).size() > 1){
+			numOfCollisions++;
+		}
 		entryCount++;
 		curLoadFactor = (entryCount as Float)/(tableSize as Float);
 
@@ -126,7 +130,6 @@ public class HashMap[K, V] {
 	}
 
 	private def rehash(){
-
 		tableSize *= 2;
 		val temp = new Rail[ArrayList[Entry[K, V]]](tableSize);
 		for (var i:Int = 0; i < temp.size; i++)
@@ -143,6 +146,7 @@ public class HashMap[K, V] {
 		}
 		curLoadFactor = (entryCount*1.0f)/tableSize;
 		hashMap = temp;
+		timesRehashed++;
 	}
 
 
@@ -156,10 +160,6 @@ public class HashMap[K, V] {
 		curLoadFactor = (entryCount as Float)/tableSize;
 	}
 
-	public def getLoad(){
-		return curLoadFactor;
-	}
-
 	public def printMap(){
 		Console.OUT.println("Key\tValue");
 		var entry:Entry[K, V];
@@ -171,6 +171,15 @@ public class HashMap[K, V] {
 			}
 		}
 
+	}
+
+	public def getStats(){
+		Console.OUT.println("Stats");
+		Console.OUT.println("TableSize:\t" + tableSize);
+		Console.OUT.println("Total No. of Entries:\t" + entryCount);
+		Console.OUT.println("Total No. of Collision:\t" + numOfCollisions);
+		Console.OUT.println("Avg No. of Entries per Bucket:\t" + (entryCount*1.0f)/tableSize);
+		Console.OUT.println("Current Load Factor (CLF):\t" + curLoadFactor);
 	}
 
 	public def toString():String{
