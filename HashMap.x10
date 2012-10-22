@@ -13,11 +13,11 @@ public class HashMap[K, V] {
 
 	private var tableSize:Int;
 	private val maxLoadFactor:Float;
-	val hashMap:Rail[ArrayList[Entry[K, V]]]; 
+	var hashMap:Rail[ArrayList[Entry[K, V]]]; 
 
 	private var entryCount:Int;
 	private var curLoadFactor:Float;
-
+ 
 
 	public def this(tableSize:Int) {
 		this[K, V](tableSize, 0.75f);
@@ -128,6 +128,27 @@ public class HashMap[K, V] {
 			}
 		}
 	}
+	
+	private def rehash(){
+		
+		tableSize *= 2;
+		val temp = new Rail[ArrayList[Entry[K, V]]](tableSize);
+		for (var i:Int = 0; i < temp.size; i++)
+			temp(i) = new ArrayList[Entry[K, V]]();
+		
+		for( var i:Int = 0; i < hashMap.size; i++){
+			val element:ArrayList[Entry[K,V]] = hashMap(i);
+			for( var j:Int = 0; j < element.size(); i++){
+				val entry = element(j);
+				val index = (entry.getKey() as Int) % tableSize;
+				temp(index).add(entry);
+			}
+			
+		}
+		curLoadFactor = (entryCount*1.0f)/tableSize;
+		hashMap = temp;
+	}
+
 
 	public def clear() {
 		if (isEmpty())
