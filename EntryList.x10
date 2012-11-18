@@ -114,6 +114,34 @@ public class EntryList[K, V] {
 		n.next = null;
 		return n.getValue();
 	}
+	
+	public def find(key:Any):Entry[K,V]{
+		var prev:Entry[K, V];
+		var curr:Entry[K, V];
+		var next:AtomicReference[Entry[K, V]];
+		
+		do {
+			prev = head.get();
+			curr = prev.next.get();
+			
+			while( curr != null ){
+				next = curr.next;
+				if( curr.getKey().equals(key) ){
+					if( prev.next.compareAndSet(curr,curr) )
+						return curr;
+					break;
+				}
+				prev = curr;
+				curr = next.get();
+			}
+			
+			if( prev == tail.get())
+				break;
+			
+		} while( true );
+		
+		return null;
+	}
 
 	public def toString():String {
 		// Note: this is not safe!!!
