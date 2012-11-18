@@ -84,26 +84,24 @@ public class EntryList[K, V] {
 		var p:Entry[K, V] = null;
 		var curr:Entry[K, V] = null;
 		var n:Entry[K, V] = null;
-		var innerLoop:Boolean = true;
-		var outerLoop:Boolean = true;
 
+
+		OuterLoop:
 		do {
 			p = head.get();
 			curr = p.next.get();
-			innerLoop = true;
-			while(innerLoop) {
+			while(true) {
 				n = curr.next.get();
-				if (curr.getValue().equals(dataToRemove))
+				if (curr.getValue().equals(dataToRemove)){
 					if(p.next.compareAndSet(curr, n)){
-						innerLoop = false;
-						outerLoop = false;
+						break OuterLoop;
 					}
-					else
-						innerLoop = false;
+					break;
+				}
 				p = curr;
 				curr = n;
 			}
-		} while (outerLoop);
+		} while (true);
 
 		//success
 		entryCount.decrementAndGet();
