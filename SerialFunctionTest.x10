@@ -37,7 +37,7 @@ public class SerialFunctionTest {
 		Console.OUT.println("Map: ");
 		map.printMap();
 		Console.OUT.println();
-
+/*
                 Console.OUT.println("Value of 'Cat': " + map.get("Cat"));
 		Console.OUT.println("Value of 'Lion': " + map.get("Lion"));
 		Console.OUT.println("Value of 'Dog': " + map.get("Dog"));
@@ -75,7 +75,7 @@ public class SerialFunctionTest {
 
 		Console.OUT.println("Added 50 random int pairs to intMap");
 		Console.OUT.println(intMap.getStats());
-
+*/
         }
 }
 

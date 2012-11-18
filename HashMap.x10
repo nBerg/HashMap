@@ -1,20 +1,21 @@
 import x10.io.Console; 
 import x10.lang.String;
-import x10.util.ArrayList;
+import x10.util.concurrent.AtomicInteger;
+import x10.util.concurrent.AtomicFloat;
 
 public class HashMap[K, V] {
 
 	private val DEFAULT_CAPACITY = 16;
 	private val DEFAULT_LOAD = 0.75f;
 
-	private var tableSize:Int;
+	private var tableSize:AtomicInteger;
 	private val maxLoadFactor:Float;
-	private var hashMap:Rail[ArrayList[Entry[K, V]]]; 
+	private var hashMap:Rail[EntryList[K, V]];
 
-	private var entryCount:Int;
-	private var curLoadFactor:Float;
-	private var timesRehashed:Int;
-	private var numOfCollisions:Int;
+	private var entryCount:AtomicInteger;
+	private var curLoadFactor:AtomicFloat;
+	private var timesRehashed:AtomicInteger;
+	private var numOfCollisions:AtomicInteger;
 
 	/* Constructor with tableSize from user */
 	public def this(tableSize:Int) {
@@ -28,35 +29,35 @@ public class HashMap[K, V] {
 
 	/* Initialize our data */
 	public def this(tableSize:Int, loadFactor:Float) {
-		this.tableSize = tableSize;
+		this.tableSize = new AtomicInteger(tableSize);
 		maxLoadFactor = loadFactor;
 
-		hashMap = new Rail[ArrayList[Entry[K, V]]](tableSize);
-		entryCount = 0;
-		curLoadFactor = 0;
-		timesRehashed = 0;
+		hashMap = new Rail[EntryList[K, V]](tableSize);
+		entryCount = new AtomicInteger(0);
+		curLoadFactor = new AtomicFloat(0);
+		timesRehashed = new AtomicInteger(0);
 
 		for (var i:Int = 0; i < hashMap.size; i++)
-			hashMap(i) = new ArrayList[Entry[K, V]]();
+			hashMap(i) = new EntryList[K, V]();
 	}
 
 	/* Test if map is empty */
 	public def isEmpty() {
-		return (entryCount == 0);
+		return (entryCount.get() == 0);
 	}
 
 	/* Get map size */
 	public def size() {
-		return entryCount;
+		return entryCount.get();
 	}
 
 	/* Hashing function. Each key gets it's own hashCode,
 	 * but different items may return the same hashVal
 	 */
 	public def hash(key:K) {
-		var hashVal:Int = key.hashCode() % tableSize;
+		var hashVal:Int = key.hashCode() % tableSize.get();
 		if (hashVal < 0)
-			hashVal += tableSize;
+			hashVal += tableSize.get();
 
 		return hashVal;
 	}
@@ -74,13 +75,16 @@ public class HashMap[K, V] {
 
 		hashMap(index).add(entry);
 		if(hashMap(index).size() > 1){
-			numOfCollisions++;
+			numOfCollisions.incrementAndGet();
 		}
-		entryCount++;
+		entryCount.incrementAndGet();
+
+		/*This needs to be done safely with compare and swaps
 		curLoadFactor = (entryCount as Float)/(tableSize as Float);
 
 		if (curLoadFactor > maxLoadFactor)
 			rehash();
+		*/
 
 	}
 
@@ -95,11 +99,13 @@ public class HashMap[K, V] {
 		val bucket = hashMap(index);
 		var entry:Entry[K, V];
 
+/* No find implemented yet
 		for (var i:Int = 0; i < bucket.size(); i++) {
 			entry = bucket(i);
 			if (entry.getKey().equals(key))
 				return entry.getValue();
 		}
+*/
 
 		/* Key not found */
 		return null;
@@ -113,7 +119,7 @@ public class HashMap[K, V] {
 		val index = hash(key);
 		val bucket = hashMap(index);
 		var entry:Entry[K, V];
-
+/* No find implemented yet
 		if (bucket.isEmpty())
 			return false;
 
@@ -122,7 +128,7 @@ public class HashMap[K, V] {
 			if (entry.getKey().equals(key))
 				return true;
 		}
-
+*/
 		/* Key not found */
 		return false;
 	}
@@ -135,7 +141,7 @@ public class HashMap[K, V] {
 		val index = hash(key);
 		val bucket = hashMap(index);
 		var entry:Entry[K, V];
-
+/* No find implemented yet
 		if (bucket.isEmpty())
 			return;
 
@@ -147,14 +153,16 @@ public class HashMap[K, V] {
 				curLoadFactor = (entryCount as Float)/tableSize;
 			}
 		}
+*/
+		bucket.remove(key);
 	}
 
 	
         private def rehash() {
-                tableSize *= 2;
-		timesRehashed++;
+/*                tableSize.set(tablesize.get()* 2);
+		timesRehashed.incrementAndGet();
 
-                val temp = new Rail[ArrayList[Entry[K, V]]](tableSize);
+                val temp = new Rail[EntryList[Entry[K, V]]](tableSize);
                 for (var i:Int = 0; i < temp.size; i++)
                         temp(i) = new ArrayList[Entry[K, V]]();
 
@@ -170,6 +178,7 @@ public class HashMap[K, V] {
 
                 curLoadFactor = (entryCount as Float)/tableSize;
                 hashMap = temp;
+*/
         }
 
 	/* Empty out the map */
@@ -179,34 +188,34 @@ public class HashMap[K, V] {
 
 		for (var i:Int = 0; i < hashMap.size; i++)
 			hashMap(i).clear();
-		entryCount = 0;
-		curLoadFactor = (entryCount as Float)/tableSize;
+		entryCount.set(0);
+//		curLoadFactor = (entryCount as Float)/tableSize;
 	}
 
 	/* Display map */
 	public def printMap(){
-		Console.OUT.println("Key\tValue");
+/*		Console.OUT.println("Key\tValue");
 		var entry:Entry[K, V];
-		for(var i:Int = 0; i< tableSize; i++){
+		for(var i:Int = 0; i < tableSize; i++){
 			val bucket = hashMap(i);
 			for(var j:Int = 0; j < bucket.size(); j++){
 				entry = bucket(j);
 				Console.OUT.println(entry.getKey() + "\t" + entry.getValue());
 			}
 		}
-
+*/
 	}
 
 	public def getLoad() {
-		return curLoadFactor;
+		return curLoadFactor.get();
 	}
 
 	public def getTableSize() {
-		return tableSize;
+		return tableSize.get();
 	}
 
 	public def getNumCollisions() {
-		return numOfCollisions;
+		return numOfCollisions.get();
 	}
 
 	/* Print map stats */
@@ -228,30 +237,5 @@ public class HashMap[K, V] {
 			str += hashMap(i) + " ";
 		}
 		return str;
-	}
-
-	/* Entry class containing key and value data as
-	 * as generic types
-	 */
-	private class Entry[K, V] {
-		private val key:K;
-		private val value:V;
-
-		public def this(key:K, value:V) {
-			this.key = key;
-			this.value = value;
-		}
-
-		public getKey() {
-			return key;
-		}
-
-		public getValue() {
-			return value;
-		}
-
-		public def toString():String{
-			return "["+key+","+value+"]";
-		}
 	}
 }	
