@@ -150,7 +150,7 @@ public class EntryList[K, V] {
 		var str:String = "";
 
 		while (curr != null) {
-			str += "[" + curr + "], ";
+			str += "[" + curr + "] -> ";
 			curr = curr.next.get();
 		}
 

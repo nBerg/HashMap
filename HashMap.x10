@@ -35,6 +35,7 @@ public class HashMap[K, V] {
 		entryCount = new AtomicInteger(0);
 		curLoadFactor = new AtomicFloat(0);
 		timesRehashed = new AtomicInteger(0);
+		numOfCollisions = new AtomicInteger(0);
 
 		for (var i:Int = 0; i < hashMap.size; i++)
 			hashMap(i) = new EntryList[K, V]();
@@ -71,12 +72,16 @@ public class HashMap[K, V] {
 
 		/* Remove any duplicate keys */
 //		remove(key);
-
+Console.OUT.println("here 1");
 		hashMap(index).add(entry);
+Console.OUT.println("here2");
 
 		if(hashMap(index).size() > 1){
+			Console.OUT.println("here3");
 			numOfCollisions.incrementAndGet();
+			Console.OUT.println("here4");
 		}
+Console.OUT.println("here5");
 		entryCount.incrementAndGet();
 
 		/*This needs to be done safely with compare and swaps
@@ -234,7 +239,7 @@ public class HashMap[K, V] {
 	public def toString():String{
 		var str:String = "";
 		for( var i:Int = 0; i < hashMap.size; i++){
-			str += hashMap(i) + " ";
+			str += hashMap(i) + "\n ";
 		}
 		return str;
 	}
