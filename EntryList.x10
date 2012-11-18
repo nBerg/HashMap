@@ -10,7 +10,13 @@ public class EntryList[K, V] {
 	
 
 	public def this() {
-		val sentinel = new Entry[K, V]((0 as K), (0 as V));
+		val sentinel:Entry[K, V];
+
+		try {
+			sentinel = new Entry[K, V]((0 as K), (0 as V));
+		} catch(e:Exception) {
+			sentinel = new Entry[K, V](("" as K), ("s" as V));
+		}
 		head = AtomicReference.newAtomicReference[Entry[K, V]](sentinel);
 		tail = AtomicReference.newAtomicReference[Entry[K, V]](sentinel);
 
@@ -33,8 +39,8 @@ public class EntryList[K, V] {
 	}
 
 
-	public def enq(data:Entry[K, V]) {
-		var d:Entry[K, V] = data;
+	public def enq(entry:Entry[K, V]) {
+		var e:Entry[K, V] = entry;
 
 		var t:Entry[K, V] = null;
 		var n:Entry[K, V] = null;
@@ -46,10 +52,10 @@ public class EntryList[K, V] {
 				tail.compareAndSet(t,n);
 				continue;
 			}
-			if (t.next.compareAndSet(null,d)) break;  // STEP 1: add new element
+			if (t.next.compareAndSet(null, e)) break;  // STEP 1: add new element
 
 		} while (true);
-		tail.compareAndSet(t,d);                      // STEP 2: update tail ptr
+		tail.compareAndSet(t, e);                      // STEP 2: update tail ptr
 	}
 
 /*	public def deq() {

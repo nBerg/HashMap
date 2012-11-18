@@ -11,15 +11,9 @@ public class Entry[K, V] {
 	public def this(key:K, value:V) {
 		this.key = key;
 		this.value = value;
-		next = null;
+		//this.next = AtomicReference.newAtomicReference[Entry[K, V]](null);
 	}
 
-/*	public def this() {
-		key = null;
-		value = null;
-		next = null;
-	}
-*/
 	public getKey() {
 		return key;
 	}

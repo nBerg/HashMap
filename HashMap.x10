@@ -31,7 +31,6 @@ public class HashMap[K, V] {
 	public def this(tableSize:Int, loadFactor:Float) {
 		this.tableSize = new AtomicInteger(tableSize);
 		maxLoadFactor = loadFactor;
-
 		hashMap = new Rail[EntryList[K, V]](tableSize);
 		entryCount = new AtomicInteger(0);
 		curLoadFactor = new AtomicFloat(0);
@@ -71,9 +70,10 @@ public class HashMap[K, V] {
 		val entry = new Entry[K, V](key, value);
 
 		/* Remove any duplicate keys */
-		remove(key);
+//		remove(key);
 
 		hashMap(index).add(entry);
+
 		if(hashMap(index).size() > 1){
 			numOfCollisions.incrementAndGet();
 		}
