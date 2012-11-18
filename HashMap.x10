@@ -72,9 +72,8 @@ public class HashMap[K, V] {
 
 		/* Remove any duplicate keys */
 //		remove(key);
-Console.OUT.println("here 1");
+
 		hashMap(index).add(entry);
-Console.OUT.println("here2");
 
 		if(hashMap(index).size() > 1){
 			Console.OUT.println("here3");
@@ -104,16 +103,20 @@ Console.OUT.println("here5");
 		val bucket = hashMap(index);
 		var entry:Entry[K, V];
 
+		entry = bucket.find(key);
+		return ((entry != null) ? entry.getValue : null);
+
 /* No find implemented yet
 		for (var i:Int = 0; i < bucket.size(); i++) {
 			entry = bucket(i);
 			if (entry.getKey().equals(key))
 				return entry.getValue();
 		}
-*/
 
+*/
 		/* Key not found */
-		return null;
+//		return null;
+
 	}
 
 	/* Tests if map contains key */
@@ -124,6 +127,8 @@ Console.OUT.println("here5");
 		val index = hash(key);
 		val bucket = hashMap(index);
 		var entry:Entry[K, V];
+
+		return ((bucket.find(key) != null) ? true : false);
 /* No find implemented yet
 		if (bucket.isEmpty())
 			return false;
@@ -135,7 +140,8 @@ Console.OUT.println("here5");
 		}
 */
 		/* Key not found */
-		return false;
+//		return false;
+
 	}
 
 	/* Remove the key from the map bucket*/

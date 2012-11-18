@@ -11,13 +11,11 @@ public class SerialFunctionTest {
 		Console.OUT.println("Map is Empty: " + map.isEmpty());
 		Console.OUT.println(map.getStats());
 		Console.OUT.println();
-Console.OUT.println("here1");
 
                 map.add("Cat", "Meow");
 		Console.OUT.println("Added (Cat, Meow) to Map");
-		//Console.OUT.println("Map contains key 'Cat': " + map.contains("Cat"));
+		Console.OUT.println("Map contains key 'Cat': " + map.contains("Cat"));
 		Console.OUT.println();
-Console.OUT.println("here2");
 
                 map.add("Lion", "Roar");
 		Console.OUT.println("Added (Lion, Roar) to Map");
@@ -39,13 +37,13 @@ Console.OUT.println("here2");
 		Console.OUT.println("Map: ");
 		map.printMap();
 		Console.OUT.println();
-/*
+
                 Console.OUT.println("Value of 'Cat': " + map.get("Cat"));
 		Console.OUT.println("Value of 'Lion': " + map.get("Lion"));
 		Console.OUT.println("Value of 'Dog': " + map.get("Dog"));
 		Console.OUT.println("Value of 'Rabbit': " + map.get("Rabbit"));
 		Console.OUT.println();
-
+/*
 		map.add("Cat", "Mew");
 		Console.OUT.println("Added (Cat, Mew) to map");
 		Console.OUT.println("Value of 'Cat': " + map.get("Cat"));

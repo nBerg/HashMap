@@ -115,7 +115,7 @@ public class EntryList[K, V] {
 		return n.getValue();
 	}
 	
-	public def find(key:Any):Entry[K,V]{
+	public def find(key:K) {
 		var prev:Entry[K, V];
 		var curr:Entry[K, V];
 		var next:AtomicReference[Entry[K, V]];
