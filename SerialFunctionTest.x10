@@ -32,8 +32,8 @@ public class SerialFunctionTest {
 		Console.OUT.println("Map is empty: " + map.isEmpty());
 		Console.OUT.println(map.getStats());
 		Console.OUT.println();
-
-		Console.OUT.println("Map: " + map);
+ 
+		Console.OUT.println("Map: " + map); 
 		Console.OUT.println("Map: ");
 		map.printMap();
 		Console.OUT.println();
@@ -43,39 +43,48 @@ public class SerialFunctionTest {
 		Console.OUT.println("Value of 'Dog': " + map.get("Dog"));
 		Console.OUT.println("Value of 'Rabbit': " + map.get("Rabbit"));
 		Console.OUT.println();
-/*
+
 		map.add("Cat", "Mew");
 		Console.OUT.println("Added (Cat, Mew) to map");
 		Console.OUT.println("Value of 'Cat': " + map.get("Cat"));
 		Console.OUT.println("Map: " + map);
 		Console.OUT.println();
-
+		
+		Console.OUT.println("Removing cat...");       
 		map.remove("Cat");
 		Console.OUT.println("Removed 'Cat' from map");
+		Console.OUT.println("Map: " + map);
+		
 		map.remove("Dog");
-		Console.OUT.println("Removed 'Dog' from map");
+		Console.OUT.println("Removed 'Dog' from map");  
 		map.remove("Rabbit");
 		Console.OUT.println("Removed 'Rabbit' from map");
+		
+		
+		
 		Console.OUT.println("Map contains key 'Lion': " + map.contains("Lion"));
 		Console.OUT.println("Map contains key 'Cat': " + map.contains("Cat"));
 		Console.OUT.println("Map contains key 'Dog': " + map.contains("Dog"));
 		Console.OUT.println(map.getStats());
 		Console.OUT.println();
 
+	/*	
 		map.clear();
-		Console.OUT.println("Cleared map");
+		Console.OUT.println("Cleared map");  
 		Console.OUT.println("Map is empty: " + map.isEmpty());
 		Console.OUT.println(map.getStats());
 		Console.OUT.println();
-
+		
 		var intMap:HashMap[Int, Int] = new HashMap[Int,Int](25, .75f);
 		val r = new Random();
 		for (var i:Int = 0; i < 50; i++)
 			intMap.add(r.nextInt(), r.nextInt());
 
 		Console.OUT.println("Added 50 random int pairs to intMap");
+		Console.OUT.println("Map: " + intMap);
 		Console.OUT.println(intMap.getStats());
-*/
+*/	
+
         }
 }
 

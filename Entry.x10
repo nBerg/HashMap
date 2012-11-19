@@ -5,7 +5,7 @@ import x10.util.concurrent.AtomicReference;
  */
 public class Entry[K, V] {
 	private val key:K;
-	private val value:V;
+	private var value:V;
 	public var next:AtomicReference[Entry[K, V]] = AtomicReference.newAtomicReference[Entry[K, V]](null);
 
 	public def this(key:K, value:V) {
@@ -20,6 +20,10 @@ public class Entry[K, V] {
 
 	public getValue() {
 		return value;
+	}
+	
+	public def setValue(value:V){
+		this.value = value;
 	}
 
 	public def toString():String{

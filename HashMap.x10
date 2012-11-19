@@ -69,26 +69,23 @@ public class HashMap[K, V] {
 	public def add(key:K, value:V) {
 		val index = hash(key);
 		val entry = new Entry[K, V](key, value);
-
-		/* Remove any duplicate keys */
-//		remove(key);
-
+		
 		hashMap(index).add(entry);
 
 		if(hashMap(index).size() > 1){
-			Console.OUT.println("here3");
 			numOfCollisions.incrementAndGet();
-			Console.OUT.println("here4");
 		}
-Console.OUT.println("here5");
-		entryCount.incrementAndGet();
 
-		/*This needs to be done safely with compare and swaps
-		curLoadFactor = (entryCount as Float)/(tableSize as Float);
+		val curLoadFactorBefore = curLoadFactor.get();
+		val entryCountNow = entryCount.incrementAndGet();
 
-		if (curLoadFactor > maxLoadFactor)
-			rehash();
-		*/
+		/*This needs to be done safely with compare and swaps*/
+		//val newLoadFactor = (entryCountNow as Float)/(tableSize.get());
+		//curLoadFactor.compareAndSet(curLoadFactorBefore, newLoadFactor);
+
+		//if (curLoadFactor.get() > maxLoadFactor)
+		//	rehash();
+		
 
 	}
 
@@ -106,17 +103,6 @@ Console.OUT.println("here5");
 		entry = bucket.find(key);
 		return ((entry != null) ? entry.getValue : null);
 
-/* No find implemented yet
-		for (var i:Int = 0; i < bucket.size(); i++) {
-			entry = bucket(i);
-			if (entry.getKey().equals(key))
-				return entry.getValue();
-		}
-
-*/
-		/* Key not found */
-//		return null;
-
 	}
 
 	/* Tests if map contains key */
@@ -129,18 +115,6 @@ Console.OUT.println("here5");
 		var entry:Entry[K, V];
 
 		return ((bucket.find(key) != null) ? true : false);
-/* No find implemented yet
-		if (bucket.isEmpty())
-			return false;
-
-		for (var i:Int = 0; i < bucket.size(); i++) {
-			entry = bucket(i);
-			if (entry.getKey().equals(key))
-				return true;
-		}
-*/
-		/* Key not found */
-//		return false;
 
 	}
 
@@ -152,19 +126,7 @@ Console.OUT.println("here5");
 		val index = hash(key);
 		val bucket = hashMap(index);
 		var entry:Entry[K, V];
-/* No find implemented yet
-		if (bucket.isEmpty())
-			return;
 
-		for (var i:Int = 0; i < bucket.size(); i++) {
-			entry = bucket(i);
-			if (entry.getKey().equals(key)) {
-				bucket.remove(entry);
-				entryCount--;
-				curLoadFactor = (entryCount as Float)/tableSize;
-			}
-		}
-*/
 		bucket.remove(key);
 	}
 
@@ -196,11 +158,12 @@ Console.OUT.println("here5");
 	public def clear() {
 		if (isEmpty())
 			return;
-
+		
 		for (var i:Int = 0; i < hashMap.size; i++)
 			hashMap(i).clear();
+		
 		entryCount.set(0);
-//		curLoadFactor = (entryCount as Float)/tableSize;
+//		curLoadFactor.compareAndSet = (entryCount as Float)/tableSize;
 	}
 
 	/* Display map */
@@ -236,7 +199,7 @@ Console.OUT.println("here5");
 		statStr += "TableSize:\t" + tableSize + "\n";
 		statStr += "Total No. of Entries:\t" + entryCount + "\n";
 		statStr += "Total No. of Collision:\t" + numOfCollisions + "\n";
-		statStr += String.format("Current Load Factor (CLF):\t%.4f\n", new Array[Any](1,curLoadFactor));
+		//statStr += String.format("Current Load Factor (CLF):\t%.4f\n", new Array[Any](1,curLoadFactor));
 		statStr += "Times rehashed:\t" + timesRehashed + "\n";
 		
 		return statStr;
