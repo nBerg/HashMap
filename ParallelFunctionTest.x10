@@ -8,7 +8,7 @@ public class ParallelFunctionTest {
 
 		val map:HashMap[String, String] = new HashMap[String, String]();
 
-		finish for(var x:Int = 0; x < 2; x++){
+		finish for(var x:Int = 0; x < 8; x++){
 			val final_x = x;
 			async{
 				Console.OUT.println("Map is Empty: " + map.isEmpty());
@@ -16,10 +16,10 @@ public class ParallelFunctionTest {
 				Console.OUT.println();
 		
 				map.add("Cat", "Meow" + final_x);
-				Console.OUT.println("Added (Cat, Meow) to Map");
+				Console.OUT.println("Added (Cat, Meow " + final_x + ") to Map");
 				Console.OUT.println("Map contains key 'Cat': " + map.contains("Cat"));
 				Console.OUT.println();
-		/*
+		
 				map.add("Lion", "Roar");
 				Console.OUT.println("Added (Lion, Roar) to Map");
 				Console.OUT.println("Map contains key 'Lion': " + map.contains("Lion"));
@@ -71,7 +71,7 @@ public class ParallelFunctionTest {
 				Console.OUT.println(map.getStats());
 				Console.OUT.println();
 				
-				*/
+				
 		
 				/*	
 				 * map.clear();

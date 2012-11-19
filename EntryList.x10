@@ -6,12 +6,15 @@ public class EntryList[K, V] {
 
 	private var head:AtomicReference[Entry[K, V]];
 	private var tail:AtomicReference[Entry[K, V]];
+	private val poison:AtomicReference[Entry[K,V]];
 	private var entryCount:AtomicInteger;
 	
 
 	public def this() {
-		val sentinel:Entry[K, V];
+		var sentinel:Entry[K, V];
+		var poisonEntry:Entry[K,V];
 
+		poisonEntry = new Entry[K, V]( ("" as K), ("" as V));
 		try {
 			sentinel = new Entry[K, V]((0 as K), (0 as V));
 		} catch(e:Exception) {
@@ -19,12 +22,14 @@ public class EntryList[K, V] {
 		}
 		head = AtomicReference.newAtomicReference[Entry[K, V]](sentinel);
 		tail = AtomicReference.newAtomicReference[Entry[K, V]](sentinel);
+		poison = AtomicReference.newAtomicReference[Entry[K, V]]();
 
 		entryCount = new AtomicInteger(0);
 	}
 
 	public def clear() {
 		// is this safe?? May need to save the current state to locals and then cas them
+		// I.E -> I think it is fine bc the call here wants to clear the map regardless of when something was added
 		val sentinel = head.get();
 		sentinel.next.set(null);
 		tail.set(sentinel);
@@ -39,23 +44,55 @@ public class EntryList[K, V] {
 	}
 
 
-	public def enq(entry:Entry[K, V]) {
+	public def enq(entry:Entry[K, V]):Boolean {
 		var e:Entry[K, V] = entry;
-
-		var t:Entry[K, V] = null;
+		
+		var p:Entry[K, V] = null;
+		var curr:Entry[K, V] = null;
 		var n:Entry[K, V] = null;
-		do {
-			t = tail.get();
-			n = t.next.get();
-			if (tail.get() != t) continue;
-			if (n != null) {                  // some other thread has started an enqueue...
-				tail.compareAndSet(t,n);
-				continue;
-			}
-			if (t.next.compareAndSet(null, e)) break;  // STEP 1: add new element
 
-		} while (true);
-		tail.compareAndSet(t, e);                      // STEP 2: update tail ptr
+		OuterLoop:
+			do {
+				p = head.get();
+				curr = p.next.get();
+				while( curr != null) {
+					n = curr.next.get();
+					
+					if (curr.getKey().equals(entry.getKey())){
+						// FIXME: Not safe
+						Console.OUT.println("ENQ About to setValue "); 
+						curr.setValue(entry.getValue());				/* FIXME: Not safe */
+						return false;
+					}
+					p = curr;
+					curr = n;
+				}
+						
+				Console.OUT.println("ENQ Checking if tail == p");
+				
+				val t = tail.get();
+				if( tail.compareAndSet(p,p) ){									//Check to make sure tail is the same.								
+					if( t.next.compareAndSet(curr,e) ){ 						// Add entry to end of the list	
+						break OuterLoop; 										// First part done
+					}
+				} 
+				//Something changed...p != tail...check if we can 'help' out
+				else {
+					if ( t.next.get().equals(p) ) { 							//Check if p is after tail which means another enqueue was started
+						
+						if( !tail.compareAndSet(t,p) )							// Moving tail forward to 'p'						
+							continue;											// failed to advance head to p
+						
+						if( tail.get().next.compareAndSet(p,e) )				// Put e to the end -- NOTE: 't' is old here
+							break OuterLoop;									// First part done -- NOTE: this whole part done here is an optimization										
+					}
+				}
+				
+				Console.OUT.println("ENQ Going around again.......");			//Something didnt work
+			} while (true);
+
+			tail.compareAndSet(p,e);											// Second part done
+			return true;
 	}
 
 /*	public def deq() {
@@ -81,12 +118,14 @@ public class EntryList[K, V] {
 		return d;
 	}
 */
-	public def add(entry:Entry[K, V]) {
-		enq(entry);
-		entryCount.incrementAndGet();
+	public def add(entry:Entry[K, V]):Boolean {
+		val added = enq(entry);
+		if( added )
+			entryCount.incrementAndGet();
+		return added;
 	}
 
-	public def remove(dataToRemove:Any) {
+	public def remove(dataToRemove:Any):V {
 		var p:Entry[K, V] = null;
 		var curr:Entry[K, V] = null;
 		var n:Entry[K, V] = null;
@@ -97,46 +136,53 @@ public class EntryList[K, V] {
 			p = head.get();
 			curr = p.next.get();
 			while(true) {
+				if( curr == null)
+					return ("" as V);
 				n = curr.next.get();
-				if (curr.getValue().equals(dataToRemove)){
+				if (curr.getKey().equals(dataToRemove)){
 					if(p.next.compareAndSet(curr, n)){
 						break OuterLoop;
-					}
+					} 
 					break;
 				}
 				p = curr;
 				curr = n;
 			}
 		} while (true);
-
+		if( n == null)							//This needs to be moved above the first CAS
+			tail.compareAndSet(curr,p);
 		//success
-		entryCount.decrementAndGet();
-		n.next = null;
-		return n.getValue();
+		return curr.getValue();
 	}
 	
 	public def find(key:K) {
 		var prev:Entry[K, V];
 		var curr:Entry[K, V];
-		var next:AtomicReference[Entry[K, V]];
+		var next:AtomicReference[Entry[K, V]] = null;
 		
 		do {
 			prev = head.get();
 			curr = prev.next.get();
-			
-			while( curr != null ){
+			while( curr != null ){											// Iteration over list loop
 				next = curr.next;
-				if( curr.getKey().equals(key) ){
-					if( prev.next.compareAndSet(curr,curr) )
-						return curr;
+				if( curr.getKey().equals(key) ){						
+					if( prev.next.compareAndSet(curr,curr) )				// Item found -- make sure were still looking at a current reference
+						return curr;										// Not sure if CAS is needed here
 					break;
 				}
 				prev = curr;
 				curr = next.get();
+			}			
+			
+			val t = tail.get();
+			if( !tail.compareAndSet(prev,prev) ){							// Make sure we've reached the end of the list, not using old ref
+				if ( t.next.get().equals(prev) ){ 							// some other thread has started an enqueue...
+					tail.compareAndSet(t,prev);								// Moving tail forward to 'p'
+				}						
+				continue;													// Prev wasn't tail, going back over the list again	
 			}
 			
-			if( prev == tail.get())
-				break;
+			break;															// Didn't find anything
 			
 		} while( true );
 		

@@ -38,12 +38,14 @@ public class SerialFunctionTest {
 		map.printMap();
 		Console.OUT.println();
 
-                Console.OUT.println("Value of 'Cat': " + map.get("Cat"));
+               
+		Console.OUT.println("Value of 'Cat': " + map.get("Cat"));
 		Console.OUT.println("Value of 'Lion': " + map.get("Lion"));
 		Console.OUT.println("Value of 'Dog': " + map.get("Dog"));
 		Console.OUT.println("Value of 'Rabbit': " + map.get("Rabbit"));
 		Console.OUT.println();
 
+		
 		map.add("Cat", "Mew");
 		Console.OUT.println("Added (Cat, Mew) to map");
 		Console.OUT.println("Value of 'Cat': " + map.get("Cat"));
@@ -64,7 +66,7 @@ public class SerialFunctionTest {
 		
 		Console.OUT.println("Map contains key 'Lion': " + map.contains("Lion"));
 		Console.OUT.println("Map contains key 'Cat': " + map.contains("Cat"));
-		Console.OUT.println("Map contains key 'Dog': " + map.contains("Dog"));
+		Console.OUT.println("Map contains key 'Dog': " + map.contains("Dog"));  
 		Console.OUT.println(map.getStats());
 		Console.OUT.println();
 

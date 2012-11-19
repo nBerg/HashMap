@@ -70,14 +70,15 @@ public class HashMap[K, V] {
 		val index = hash(key);
 		val entry = new Entry[K, V](key, value);
 		
-		hashMap(index).add(entry);
-
+		val added = hashMap(index).add(entry);
+		if( added )
+			entryCount.incrementAndGet();
+		
 		if(hashMap(index).size() > 1){
 			numOfCollisions.incrementAndGet();
 		}
 
 		val curLoadFactorBefore = curLoadFactor.get();
-		val entryCountNow = entryCount.incrementAndGet();
 
 		/*This needs to be done safely with compare and swaps*/
 		//val newLoadFactor = (entryCountNow as Float)/(tableSize.get());
@@ -127,7 +128,9 @@ public class HashMap[K, V] {
 		val bucket = hashMap(index);
 		var entry:Entry[K, V];
 
-		bucket.remove(key);
+		val retVal = bucket.remove(key);
+		if( !retVal.equals("") ) 
+			entryCount.decrementAndGet();
 	}
 
 	
