@@ -8,7 +8,7 @@ public class ParallelFunctionTest {
 
 		val map:HashMap[String, String] = new HashMap[String, String]();
 
-		finish for(var x:Int = 0; x < 8; x++){
+		finish for(var x:Int = 0; x < 16; x++){
 			val final_x = x;
 			async{
 				Console.OUT.println("Map is Empty: " + map.isEmpty());

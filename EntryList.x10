@@ -6,23 +6,24 @@ public class EntryList[K, V] {
 
 	private var head:AtomicReference[Entry[K, V]];
 	private var tail:AtomicReference[Entry[K, V]];
-	private val poison:AtomicReference[Entry[K,V]];
+	//private val poison:AtomicReference[Entry[K,V]];
 	private var entryCount:AtomicInteger;
 	
 
 	public def this() {
 		var sentinel:Entry[K, V];
-		var poisonEntry:Entry[K,V];
+		//var poisonEntry:Entry[K,V];
 
-		poisonEntry = new Entry[K, V]( ("" as K), ("" as V));
+		//poisonEntry = new Entry[K, V]( ("" as K), ("" as V));
 		try {
-			sentinel = new Entry[K, V]((0 as K), (0 as V));
+			sentinel = new Entry[K, V]((0 as K), ("" as V));
 		} catch(e:Exception) {
+			Console.OUT.println("EXCEPTION: " + e);
 			sentinel = new Entry[K, V](("" as K), ("s" as V));
 		}
 		head = AtomicReference.newAtomicReference[Entry[K, V]](sentinel);
 		tail = AtomicReference.newAtomicReference[Entry[K, V]](sentinel);
-		poison = AtomicReference.newAtomicReference[Entry[K, V]]();
+		//poison = AtomicReference.newAtomicReference[Entry[K, V]]();
 
 		entryCount = new AtomicInteger(0);
 	}
@@ -60,7 +61,7 @@ public class EntryList[K, V] {
 					
 					if (curr.getKey().equals(entry.getKey())){
 						// FIXME: Not safe
-						Console.OUT.println("ENQ About to setValue "); 
+						//Console.OUT.println("ENQ About to setValue "); 
 						curr.setValue(entry.getValue());				/* FIXME: Not safe */
 						return false;
 					}
@@ -68,30 +69,44 @@ public class EntryList[K, V] {
 					curr = n;
 				}
 						
-				Console.OUT.println("ENQ Checking if tail == p");
+				//Console.OUT.println("ENQ Checking if tail == p");
 				
 				val t = tail.get();
-				if( tail.compareAndSet(p,p) ){									//Check to make sure tail is the same.								
-					if( t.next.compareAndSet(curr,e) ){ 						// Add entry to end of the list	
+				//Console.OUT.println("ENQ Got Tail = " + t);
+				if( tail.compareAndSet(p,p) ){									//Check to make sure tail is the same.	
+					//Console.OUT.println("ENQ p == tail");
+					if( t.next.compareAndSet(null,e) ){ 						// Add entry to end of the list	
+						//Console.OUT.println("ENQ first part done");
 						break OuterLoop; 										// First part done
 					}
 				} 
 				//Something changed...p != tail...check if we can 'help' out
 				else {
+					//Console.OUT.println("ENQ P is not equal to tail T:" + t + " Next: " + t.next.get() + " P: " + p);
+					if( t.next.get() == null){
+						tail.compareAndSet(t,p);								//Deq hasnt updated tail yet, do it here
+						continue;
+					}
 					if ( t.next.get().equals(p) ) { 							//Check if p is after tail which means another enqueue was started
-						
-						if( !tail.compareAndSet(t,p) )							// Moving tail forward to 'p'						
-							continue;											// failed to advance head to p
-						
-						if( tail.get().next.compareAndSet(p,e) )				// Put e to the end -- NOTE: 't' is old here
-							break OuterLoop;									// First part done -- NOTE: this whole part done here is an optimization										
+						//Console.OUT.println("ENQ p is after t");
+						if( !tail.compareAndSet(t,p) ){							// Moving tail forward to 'p'	
+							//Console.OUT.println("ENQ failed to advance tail to p");
+							continue;											// failed to advance tail to p
+						}
+						//Console.OUT.println("ENQ Trying to put e at the end");
+						if( tail.get().next.compareAndSet(p,e) ){				// Put e to the end -- NOTE: 't' is old here
+							//Console.OUT.println("ENQ put e at the end");
+							break OuterLoop;									// First part done -- NOTE: this whole part done here is an optimization
+						}
 					}
 				}
 				
-				Console.OUT.println("ENQ Going around again.......");			//Something didnt work
+				//Console.OUT.println("ENQ Going around again.......");			//Something didnt work
 			} while (true);
-
+		
+		//Console.OUT.println("ENQ Attemping second part");
 			tail.compareAndSet(p,e);											// Second part done
+			//Console.OUT.println("ENQ returning");
 			return true;
 	}
 
@@ -163,11 +178,15 @@ public class EntryList[K, V] {
 		do {
 			prev = head.get();
 			curr = prev.next.get();
+			//Console.OUT.println("FND Prev: " + prev + " Curr: " + curr + " Tail: " + tail.get());
 			while( curr != null ){											// Iteration over list loop
 				next = curr.next;
-				if( curr.getKey().equals(key) ){						
+				//Console.OUT.println("FND Getting key");
+				if( curr.getKey().equals(key) ){
+				//	Console.OUT.println("FND curr.key == key");
 					if( prev.next.compareAndSet(curr,curr) )				// Item found -- make sure were still looking at a current reference
 						return curr;										// Not sure if CAS is needed here
+					//Console.OUT.println("FND key break");
 					break;
 				}
 				prev = curr;
@@ -176,6 +195,10 @@ public class EntryList[K, V] {
 			
 			val t = tail.get();
 			if( !tail.compareAndSet(prev,prev) ){							// Make sure we've reached the end of the list, not using old ref
+				if( t.next.get() == null){
+					tail.compareAndSet(t,prev);								//Deq hasnt updated tail yet, do it here
+					continue;
+				}
 				if ( t.next.get().equals(prev) ){ 							// some other thread has started an enqueue...
 					tail.compareAndSet(t,prev);								// Moving tail forward to 'p'
 				}						

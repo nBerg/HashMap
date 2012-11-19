@@ -108,13 +108,14 @@ public class HashMap[K, V] {
 
 	/* Tests if map contains key */
 	public def contains(key:K) {
+		Console.OUT.println("CONT Contains");
 		if (isEmpty())
 			return false;
 
 		val index = hash(key);
 		val bucket = hashMap(index);
 		var entry:Entry[K, V];
-
+		Console.OUT.println("CONT Going into find");
 		return ((bucket.find(key) != null) ? true : false);
 
 	}
