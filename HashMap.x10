@@ -74,15 +74,16 @@ public class HashMap[K, V] {
 		if( added )
 			entryCount.incrementAndGet();
 		
-		if(hashMap(index).size() > 1){
+		if(hashMap(index).size() > 1 && added){
 			numOfCollisions.incrementAndGet();
 		}
 
 		val curLoadFactorBefore = curLoadFactor.get();
-
+		val entryCountNow = entryCount.get();
+		
 		/*This needs to be done safely with compare and swaps*/
-		//val newLoadFactor = (entryCountNow as Float)/(tableSize.get());
-		//curLoadFactor.compareAndSet(curLoadFactorBefore, newLoadFactor);
+		val newLoadFactor = (entryCountNow as Float)/(tableSize.get());
+		curLoadFactor.compareAndSet(curLoadFactorBefore, newLoadFactor);
 
 		//if (curLoadFactor.get() > maxLoadFactor)
 		//	rehash();
@@ -108,14 +109,12 @@ public class HashMap[K, V] {
 
 	/* Tests if map contains key */
 	public def contains(key:K) {
-		Console.OUT.println("CONT Contains");
 		if (isEmpty())
 			return false;
 
 		val index = hash(key);
 		val bucket = hashMap(index);
 		var entry:Entry[K, V];
-		Console.OUT.println("CONT Going into find");
 		return ((bucket.find(key) != null) ? true : false);
 
 	}
@@ -136,8 +135,8 @@ public class HashMap[K, V] {
 
 	
         private def rehash() {
-/*                tableSize.set(tablesize.get()* 2);
-		timesRehashed.incrementAndGet();
+/*      	tableSize.set(tablesize.get()* 2);
+			timesRehashed.incrementAndGet();
 
                 val temp = new Rail[EntryList[Entry[K, V]]](tableSize);
                 for (var i:Int = 0; i < temp.size; i++)
@@ -167,7 +166,9 @@ public class HashMap[K, V] {
 			hashMap(i).clear();
 		
 		entryCount.set(0);
-//		curLoadFactor.compareAndSet = (entryCount as Float)/tableSize;
+		
+		val curLoadFactorBefore = curLoadFactor.get();
+		curLoadFactor.compareAndSet(curLoadFactorBefore, 0);
 	}
 
 	/* Display map */
