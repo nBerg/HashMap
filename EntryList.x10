@@ -60,7 +60,7 @@ public class EntryList[K, V] {
 						curr.setValue(entry.getValue());				/* FIXME: Not safe */
 						if( p.next.compareAndSet(curr,curr) )
 							return false;							//Replaced an element, return false so wont incremment
-						break;										// Something changed, go back around again
+						continue OuterLoop;							// Something changed, go back around again -- UNCLEAR what this mean if we reach this statement
 					}
 					p = curr;
 					curr = n;
@@ -71,18 +71,20 @@ public class EntryList[K, V] {
 				val t = tail.get();
 				if( tail.compareAndSet(p,p) ){									//Check to make sure tail is the same.	
 					if( t.next.compareAndSet(null,e) ){ 						// Add entry to end of the list	
+						//Console.OUT.println("ENQ Set e properly. Breaking");
 						break OuterLoop; 										// First part done
 					}
 				} 
 				//Something changed...p != tail...check if we can 'help' out
 				else {
+
 					if( t.next.get() == null){
 						tail.compareAndSet(t,p);								//Deq hasnt updated tail yet, do it here
 						continue;
-					}
+					} 	
 					if ( t.next.get().equals(p) ) { 							//Check if p is after tail which means another enqueue was started
 						
-						if( !tail.compareAndSet(t,p) ){							// Moving tail forward to 'p'	
+						if( !tail.compareAndSet(t,p) ){							// Moving tail forward to 'p'
 							continue;											// failed to advance tail to p
 						}
 						
@@ -92,7 +94,7 @@ public class EntryList[K, V] {
 					}
 				}
 				
-				//Console.OUT.println("ENQ Going around again.......");			//Something didnt work
+				//Console.OUT.println("ENQ Going around again" + Runtime.workerId() + ".......");			//Something didnt work
 			} while (true);
 		
 			tail.compareAndSet(p,e);											// Second part done
@@ -149,7 +151,7 @@ public class EntryList[K, V] {
 				if( curr.getKey().equals(key) ){
 					if( prev.next.compareAndSet(curr,curr) )				// Item found -- make sure were still looking at a current reference
 						return curr;										// Not sure if CAS is needed here
-					break;
+					break;													// UNCLEAR what this mean if we reach this statement
 				}
 				prev = curr;
 				curr = next.get();

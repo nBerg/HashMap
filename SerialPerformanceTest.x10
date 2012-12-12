@@ -28,7 +28,7 @@ public class SerialPerformanceTest {
 				finish for (var j:Int = 0; j < asyncCount; j++) {
 					async {
 						for (var k:Int = 0; k < loadSize/asyncCount; k++) {
-							atomic map.add(r.nextInt(len), "test"+k);
+							map.add(r.nextInt(len), "test"+k);
 						}
 					}
 				}
@@ -52,7 +52,7 @@ public class SerialPerformanceTest {
 				finish for (var j:Int = 0; j < asyncCount; j++) {
 					async {
 						for (var k:Int = 0; k < loadSize/asyncCount; k++) {
-							atomic map.get(r.nextInt(len));
+							map.get(r.nextInt(len));
 						} 
 					}
 				}
@@ -76,8 +76,8 @@ public class SerialPerformanceTest {
 					async {
 						/* Note: This is doing double the work. loadSize reads and loadSize writes */
 						for (var k:Int = 0; k < loadSize/asyncCount; k++) {
-							atomic map.add(r.nextInt(len),"test"+k);
-							atomic map.get(r.nextInt(len));
+							map.add(r.nextInt(len),"test"+k);
+							map.get(r.nextInt(len));
 			 		}
 					}
 				}
