@@ -69,6 +69,7 @@ public class EntryList[K, V] {
 				//Console.OUT.println("ENQ Checking if tail == p");
 				
 				val t = tail.get();
+				if( tail.get() != t ) continue;									// Tail changed already
 				if( tail.compareAndSet(p,p) ){									//Check to make sure tail is the same.	
 					if( t.next.compareAndSet(null,e) ){ 						// Add entry to end of the list	
 						//Console.OUT.println("ENQ Set e properly. Breaking");
@@ -78,13 +79,31 @@ public class EntryList[K, V] {
 				//Something changed...p != tail...check if we can 'help' out
 				else {
 
+					/*
+					 * Two possible cases for t.next.get() == null
+					 *  1: The tail is before P and P.next is null which means another thread was 
+					 * 		in the middle of a Dequeue.
+					 * 	2: The tail is after P  and P.next is NOT null which means in between our search and val t = tail.get(), 
+					 * 		another thread has fully completed an enqueue. Possibly many enqueues have compleleted
+					 * 		Nothing to do here but go back around. HAPPENS ALOT
+					 */
 					if( t.next.get() == null){
-						tail.compareAndSet(t,p);								//Deq hasnt updated tail yet, do it here
+						if( p.next.get() != null){
+							//Console.OUT.println("T is after P. Search again");	// Case 2
+							continue;
+						}
+						tail.compareAndSet(t,p);								//Case 1: Deq hasnt updated tail yet, do it here
+						Console.OUT.println("In deq update. BAD IF WERE ONLY ADDING");
 						continue;
 					} 	
+					
+					/*
+					 * This doesnt seem to get called. Why not?
+					 */
 					if ( t.next.get().equals(p) ) { 							//Check if p is after tail which means another enqueue was started
 						
 						if( !tail.compareAndSet(t,p) ){							// Moving tail forward to 'p'
+							Console.OUT.println("In add update. GOOD IF WERE ONLY ADDING");
 							continue;											// failed to advance tail to p
 						}
 						
