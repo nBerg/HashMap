@@ -217,6 +217,7 @@ public class HashMap[K, V] {
         if( clearFlag.get() ){
         	clearFlag.set(false);
         	rehashing.set(false);
+        	inRehash.set(false);
         	return;
         }
 	 
