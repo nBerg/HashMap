@@ -40,6 +40,9 @@ public class EntryList[K, V] {
 		return (entryCount.get() == 0);
 	}
 
+	public def getHead(){
+		return head;
+	}
 
 	public def enq(entry:Entry[K, V]):Boolean {
 		var e:Entry[K, V] = entry;
@@ -89,10 +92,10 @@ public class EntryList[K, V] {
 					 */
 					if( t.next.get() == null){
 						if( p.next.get() != null){
-							//Console.OUT.println("T is after P. Search again");	// Case 2
-							continue;
+							//Console.OUT.println("T is after P. Search again");	
+							continue;												// Case 2
 						}
-						tail.compareAndSet(t,p);								//Case 1: Deq hasnt updated tail yet, do it here
+						tail.compareAndSet(t,p);									// Case 1 
 						Console.OUT.println("In deq update. BAD IF WERE ONLY ADDING");
 						continue;
 					} 	

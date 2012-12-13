@@ -2,20 +2,29 @@ import x10.io.Console;
 import x10.lang.String;
 import x10.util.concurrent.AtomicInteger;
 import x10.util.concurrent.AtomicFloat;
+import x10.util.concurrent.AtomicBoolean;
 
 public class HashMap[K, V] {
 
 	private val DEFAULT_CAPACITY = 16;
 	private val DEFAULT_LOAD = 0.75f;
+	private val REHASH_FACTOR = 2;
 
-	private var tableSize:AtomicInteger;
+	//private var tableSize:AtomicInteger;
 	private val maxLoadFactor:Float;
 	private var hashMap:Rail[EntryList[K, V]];
+	private var rehashMap:Rail[EntryList[K,V]];
 
 	private var entryCount:AtomicInteger;
 	private var curLoadFactor:AtomicFloat;
 	private var timesRehashed:AtomicInteger;
 	private var numOfCollisions:AtomicInteger;
+	
+	//Rehashing flags
+	private var rehashing:AtomicBoolean = new AtomicBoolean(false);
+	private var rehashNumCollisions:AtomicInteger = new AtomicInteger(0);
+	private var clearFlag:AtomicBoolean = new AtomicBoolean(false);
+	private var inRehash:AtomicBoolean = new AtomicBoolean(false);
 
 	/* Constructor with tableSize from user */
 	public def this(tableSize:Int) {
@@ -29,7 +38,7 @@ public class HashMap[K, V] {
 
 	/* Initialize our data */
 	public def this(tableSize:Int, loadFactor:Float) {
-		this.tableSize = new AtomicInteger(tableSize);
+		//this.tableSize = new AtomicInteger(tableSize);
 		maxLoadFactor = loadFactor;
 		hashMap = new Rail[EntryList[K, V]](tableSize);
 		entryCount = new AtomicInteger(0);
@@ -55,9 +64,17 @@ public class HashMap[K, V] {
 	 * but different items may return the same hashVal
 	 */
 	public def hash(key:K) {
-		var hashVal:Int = key.hashCode() % tableSize.get();
+		var hashVal:Int = key.hashCode() % hashMap.size;
 		if (hashVal < 0)
-			hashVal += tableSize.get();
+			hashVal += hashMap.size;
+
+		return hashVal;
+	}
+	
+	public def hash_rehash(key:K) {
+		var hashVal:Int = key.hashCode() % rehashMap.size;
+		if (hashVal < 0)
+			hashVal += hashMap.size;
 
 		return hashVal;
 	}
@@ -77,16 +94,26 @@ public class HashMap[K, V] {
 		if(hashMap(index).size() > 1 && added){
 			numOfCollisions.incrementAndGet();
 		}
-
-		val curLoadFactorBefore = curLoadFactor.get();
-		val entryCountNow = entryCount.get();
 		
-		/*This needs to be done safely with compare and swaps*/
-		val newLoadFactor = (entryCountNow as Float)/(tableSize.get());
-		curLoadFactor.compareAndSet(curLoadFactorBefore, newLoadFactor);
+		/*
+		 * 	If rehashing is going on, duplicate all adds
+		 */
+		if( rehashing.get() ){
+			val rehash_index = hash_rehash(key);
+			val added_rehash = rehashMap(index).add(entry);
+			if(rehashMap(index).size() > 1 && added_rehash){
+				rehashNumCollisions.incrementAndGet();
+			}
+		}
+	
+		
+		val loadFactorBefore = curLoadFactor.get();						// Protection against clear() method being called
+		val entryCountNow = entryCount.get();
+		val newLoadFactor = (entryCountNow as Float)/(hashMap.size);
+		curLoadFactor.compareAndSet(loadFactorBefore, newLoadFactor); 	// Doesnt matter was curLoadFactor is
 
-		//if (curLoadFactor.get() > maxLoadFactor)
-		//	rehash();
+		if (curLoadFactor.get() > maxLoadFactor && !inRehash.get())
+			rehash();
 		
 
 	}
@@ -131,44 +158,110 @@ public class HashMap[K, V] {
 		val retVal = bucket.remove(key);
 		if( !retVal.equals("") ) 
 			entryCount.decrementAndGet();
+		
+		/*
+		 * Remove from rehashMap if rehashing is taking place
+		 */
+		if( rehashing.get() ){
+			val rehash_index = hash_rehash(key);
+			val rehash_bucket = rehashMap(rehash_index);
+			val rehash_retVal = rehash_bucket.remove(key);
+		}
 	}
 
 	
-        private def rehash() {
-/*      	tableSize.set(tablesize.get()* 2);
-			timesRehashed.incrementAndGet();
-
-                val temp = new Rail[EntryList[Entry[K, V]]](tableSize);
-                for (var i:Int = 0; i < temp.size; i++)
-                        temp(i) = new ArrayList[Entry[K, V]]();
-
-                for( var i:Int = 0; i < hashMap.size; i++) {
-                        val bucket = hashMap(i);
-                        for( var j:Int = 0; j < bucket.size(); j++) {
-                                val entry = bucket(j);
-                                val index = hash(entry.getKey());
-                                temp(index).add(entry);
-                        }
-
+    private def rehash() {
+    	
+    	//Console.OUT.println("Rehash was called. " + hashMap.size + " EntryCount: " + entryCount.get()); 
+    	
+    	/*
+    	 * Check if a thread attempted to call rehash, 
+    	 * 	while another thread is rehashing
+    	 */
+    	if( !inRehash.compareAndSet(false,true) ){
+    		//Console.OUT.println("MULTIPLE ATTEMPTS TO CALL REHASH");
+    		return;
+    	}
+    	
+    	clearFlag.set(false);
+    	
+    	rehashMap = new Rail[EntryList[K, V]](hashMap.size * REHASH_FACTOR);
+        for (var i:Int = 0; i < rehashMap.size; i++)
+                rehashMap(i) = new EntryList[K, V]();
+        
+        
+        /*
+         * At this point we have created a new array.
+         * Any new ADD/REMOVE operations called while we are
+         * copying over the original array, should be added to
+         * the new array as well.
+         * 
+         * */
+        rehashing.set(true);
+        
+        for( var i:Int = 0; i < hashMap.size; i++) {
+                val singleBucket:EntryList[K,V] = hashMap(i);
+                for( var j:Int = 0; j < singleBucket.size(); j++) {
+                	val entry = singleBucket.getHead().get();
+                	val index = hash_rehash(entry.getKey());
+                	val added = rehashMap(index).add(entry);
+                	if(rehashMap(index).size() > 1 && added){
+                		rehashNumCollisions.incrementAndGet();
+                	}
                 }
-
-                curLoadFactor = (entryCount as Float)/tableSize;
-                hashMap = temp;
-*/
         }
+        
+       // tableSize.set(rehashMap.size);
+        
+        //	Clear() method called, return early;
+        if( clearFlag.get() ){
+        	clearFlag.set(false);
+        	rehashing.set(false);
+        	return;
+        }
+	 
+        //Actual switch happens here	
+        atomic hashMap = rehashMap;												
+        
+        //Housekeeping
+        curLoadFactor.set(entryCount.get() as Float/rehashMap.size);
+        numOfCollisions.set(rehashNumCollisions.get());
+        timesRehashed.incrementAndGet();
+        
+        //Done rehashing, turn off duplication
+        rehashing.set(false);					
+        inRehash.set(false);
+        
+        //Console.OUT.println("Rehash done. EntryCount: " + entryCount.get() + " Size: " + hashMap.size);
+    }
+
 
 	/* Empty out the map */
 	public def clear() {
 		if (isEmpty())
 			return;
 		
-		for (var i:Int = 0; i < hashMap.size; i++)
-			hashMap(i).clear();
+		clearFlag.set(true); // For rehashing
 		
 		entryCount.set(0);
+		curLoadFactor.set(0);
 		
-		val curLoadFactorBefore = curLoadFactor.get();
-		curLoadFactor.compareAndSet(curLoadFactorBefore, 0);
+		if( rehashing.get() ){
+			/*  This is for the case where clear gets called in
+			 *  in between the clearFlag.get() and hashMap = rehashMap
+			 *  in rehash() method. Need the clear to keep
+			 *  the arrays consistent.
+			 * 	This is a degenirate case but still possible
+			 *  
+			 * */
+			for(var i:Int = 0; i < rehashMap.size; i++){
+				rehashMap(i).clear();
+			}
+		}
+		
+		for (var i:Int = 0; i < hashMap.size; i++){
+			hashMap(i).clear();
+		}
 	}
 
 	/* Display map */
@@ -189,9 +282,9 @@ public class HashMap[K, V] {
 		return curLoadFactor.get();
 	}
 
-	public def getTableSize() {
-		return tableSize.get();
-	}
+	//public def getTableSize() {
+	//	return tableSize.get();
+	//}
 
 	public def getNumCollisions() {
 		return numOfCollisions.get();
@@ -201,7 +294,7 @@ public class HashMap[K, V] {
 	public def getStats(){
 		var statStr:String = "";
 		statStr += "Stats:\n";
-		statStr += "TableSize:\t" + tableSize + "\n";
+		//statStr += "TableSize:\t" + tableSize + "\n";
 		statStr += "Total No. of Entries:\t" + entryCount + "\n";
 		statStr += "Total No. of Collision:\t" + numOfCollisions + "\n";
 		//statStr += String.format("Current Load Factor (CLF):\t%.4f\n", new Array[Any](1,curLoadFactor));

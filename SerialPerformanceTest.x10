@@ -9,7 +9,7 @@ public class SerialPerformanceTest {
 			return;
 		}
 
-		val len = 1000003; /* Prime number */
+		val len = 10007; /* Prime number */
 		val loadFactor = 0.75f;
 		val loadSize = Int.parseInt(args(0));
 		val tests = Int.parseInt(args(1));
@@ -18,7 +18,7 @@ public class SerialPerformanceTest {
 		val r = new Random();
 
 
-		Console.OUT.println("TEST: Adding to HashMap only -- Trials: " + tests + " Asyncs: " + asyncNum + " Load: " + len);
+		Console.OUT.println("TEST: Adding to HashMap only -- Trials: " + tests + " Asyncs: " + asyncNum + " Load: " + loadSize);
 		Console.OUT.println("Asyncs\t\tTime To Complete (ms)");
 		for(var asyncCount:Int = 1; asyncCount <= asyncNum; asyncCount *= 2) {
 			var sum:Int = 0;
@@ -42,7 +42,7 @@ public class SerialPerformanceTest {
 
 		Console.OUT.println("");
 
-		Console.OUT.println("TEST: Getting from HashMap only -- Trials: " + tests + " Asyncs: " + asyncNum + " Load: " + len);
+		Console.OUT.println("TEST: Getting from HashMap only -- Trials: " + tests + " Asyncs: " + asyncNum + " Load: " + loadSize);
 		Console.OUT.println("Asyncs\t\tTime To Complete (ms)");
 		for (var asyncCount:Int = 1; asyncCount <= asyncNum; asyncCount*=2) {
 			var sum:Int = 0;
@@ -65,7 +65,7 @@ public class SerialPerformanceTest {
 
 		Console.OUT.println("");
 
-		Console.OUT.println("TEST: Adding/Getting to/from HashMap -- Trials: " + tests + " Asyncs: " + asyncNum + " Load: " + len);
+		Console.OUT.println("TEST: Adding/Getting to/from HashMap -- Trials: " + tests + " Asyncs: " + asyncNum + " Load: " + loadSize);
 		Console.OUT.println("Asyncs\t\tTime To Complete (ms)");
 		for (var asyncCount:Int = 1; asyncCount <= asyncNum; asyncCount*=2) {
 			var sum:Int = 0;
@@ -76,9 +76,9 @@ public class SerialPerformanceTest {
 					async {
 						/* Note: This is doing double the work. loadSize reads and loadSize writes */
 						for (var k:Int = 0; k < loadSize/asyncCount; k++) {
-							map.add(r.nextInt(len),"test"+k);
+							map.add(r.nextInt(len),"test"+k+""+Runtime.workerId());
 							map.get(r.nextInt(len));
-			 		}
+						}
 					}
 				}
 				val end = Timer.milliTime();
