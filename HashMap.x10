@@ -88,9 +88,11 @@ public class HashMap[K, V]{K haszero, V haszero} {
 		val index = hash(key);
 		val entry = new Entry[K, V](key, value);
 		
+		Console.OUT.println("Adding2...");
 		val added = hashMap(index).add(entry);
+		Console.OUT.println("Adding3...");
 		if( added )
-			entryCount.incrementAndGet();
+			entryCount.incrementAndGet(); 
 		
 		if(hashMap(index).size() > 1 && added){
 			numOfCollisions.incrementAndGet();

@@ -64,19 +64,20 @@ public class EntryList[K, V] {K haszero, V haszero} {
 					curr = n;
 				}
 						
-				//Console.OUT.println("ENQ Checking if tail == p");
+				Console.OUT.println("ENQ Checking if tail == p. P = " + p + " Tail: " + tail.get() + " ID:" +Runtime.workerId());
+				Console.OUT.println("ENQ Adding E: " + e + " ID:" +Runtime.workerId());
 				
 				val t = tail.get();
 				if( tail.get() != t ) continue;									// Tail changed already
 				if( tail.compareAndSet(p,p) ){									//Check to make sure tail is the same.	
 					if( t.next.compareAndSet(null,e) ){ 						// Add entry to end of the list	
-						//Console.OUT.println("ENQ Set e properly. Breaking");
+						Console.OUT.println("ENQ Set e properly. Breaking E=" + e + " ID:" +Runtime.workerId());
 						break OuterLoop; 										// First part done
 					}
 				} 
 				//Something changed...p != tail...check if we can 'help' out
 				else {
-
+					Console.OUT.println("Elses Tail: " + tail.get() + " ID:" +Runtime.workerId());
 					/*
 					 * Two possible cases for t.next.get() == null
 					 *  1: The tail is before P and P.next is null which means another thread was 
@@ -87,11 +88,17 @@ public class EntryList[K, V] {K haszero, V haszero} {
 					 */
 					if( t.next.get() == null){
 						if( p.next.get() != null){
-							//Console.OUT.println("T is after P. Search again");	
+							Console.OUT.println("T is after P. Search again"+ " ID:" +Runtime.workerId());	
 							continue;												// Case 2
 						}
 						tail.compareAndSet(t,p);									// Case 1 
-						Console.OUT.println("In deq update. BAD IF WERE ONLY ADDING");
+						p = head.get();
+						curr = p.next.get();
+						while( curr != null) {
+							Console.OUT.println("# " + curr + " " + " ID:" +Runtime.workerId());
+							curr = curr.next.get();
+						}
+						Console.OUT.println("In deq update. BAD IF WERE ONLY ADDING"+ " ID:" +Runtime.workerId());
 						continue;
 					} 	
 					
@@ -99,21 +106,29 @@ public class EntryList[K, V] {K haszero, V haszero} {
 					 * This doesnt seem to get called. Why not?
 					 */
 					if ( t.next.get().equals(p) ) { 							//Check if p is after tail which means another enqueue was started
-						
+						Console.OUT.println("T.next.get.equals(P)"+ " ID:" +Runtime.workerId());
 						if( !tail.compareAndSet(t,p) ){							// Moving tail forward to 'p'
-							Console.OUT.println("In add update. GOOD IF WERE ONLY ADDING");
+							Console.OUT.println("In add update. GOOD IF WERE ONLY ADDING"+ " ID:" +Runtime.workerId());
 							continue;											// failed to advance tail to p
 						}
 						
 						if( tail.get().next.compareAndSet(p,e) ){				// Put e to the end -- NOTE: 't' is old here
-							break OuterLoop;									// First part done -- NOTE: this whole part done here is an optimization
+							break OuterLoop;									// First part do	ne -- NOTE: this whole part done here is an optimization
 						}
 					}
 				}
 				
-				//Console.OUT.println("ENQ Going around again" + Runtime.workerId() + ".......");			//Something didnt work
+				p = head.get();
+				curr = p.next.get();
+				while( curr != null) {
+					Console.OUT.println("# " + curr + " " );
+					curr = curr.next.get();
+				}
+				
+				Console.OUT.println("ENQ Going around again" + Runtime.workerId() + ".......");			//Something didnt work
 			} while (true);
 		
+		Console.OUT.println("Second part" + " ID:" +Runtime.workerId());
 			tail.compareAndSet(p,e);											// Second part done
 			return true;
 	}
