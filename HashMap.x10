@@ -204,14 +204,18 @@ public class HashMap[K, V]{K haszero, V haszero} {
         for( var i:Int = 0; i < hashMap.size; i++) {
                 val singleBucket:EntryList[K,V] = hashMap(i);
                 var entry:Entry[K,V] = singleBucket.getHead().get();
+                var prev:Entry[K,V];
+                entry = entry.next.get(); // Skip sentinel
                 while( entry != null ) {
-                	val index = hash_rehash(entry.getKey());
+                	val index = hash_rehash(entry.getKey());	
                 	val added = rehashMap(index).add(entry); 
                 	Console.OUT.println(entry + " " + index);
                 	if(rehashMap(index).size() > 1 && added){
                 		rehashNumCollisions.incrementAndGet();
                 	}
+                	prev = entry;
                 	entry = entry.next.get();
+                	prev.next.set(null);
                 }
         }
         
