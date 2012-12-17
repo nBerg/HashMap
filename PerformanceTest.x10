@@ -1,6 +1,6 @@
 import x10.util.Random;
 import x10.util.Timer;
-public class SerialPerformanceTest {
+public class PerformanceTest {
 
 	public static def main(args:Rail[String]) { 
 
