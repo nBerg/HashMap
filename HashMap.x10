@@ -113,8 +113,8 @@ public class HashMap[K, V]{K haszero, V haszero} {
 		val newLoadFactor = (entryCountNow as Float)/(hashMap.size);
 		curLoadFactor.compareAndSet(loadFactorBefore, newLoadFactor);
 
- 		if (curLoadFactor.get() > maxLoadFactor && !inRehash.get())
- 				rehash();
+ 		//if (curLoadFactor.get() > maxLoadFactor && !inRehash.get())
+ 		//		rehash();
 	}
 
 	/* 
