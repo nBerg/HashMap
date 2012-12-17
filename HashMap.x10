@@ -4,7 +4,7 @@ import x10.util.concurrent.AtomicInteger;
 import x10.util.concurrent.AtomicFloat;
 import x10.util.concurrent.AtomicBoolean;
 
-public class HashMap[K, V] {
+public class HashMap[K, V]{K haszero, V haszero} {
 
 	private val DEFAULT_CAPACITY = 16;
 	private val DEFAULT_LOAD = 0.75f;
@@ -74,7 +74,7 @@ public class HashMap[K, V] {
 	public def hash_rehash(key:K) {
 		var hashVal:Int = key.hashCode() % rehashMap.size;
 		if (hashVal < 0)
-			hashVal += hashMap.size;
+			hashVal += rehashMap.size;
 
 		return hashVal;
 	}
@@ -84,6 +84,7 @@ public class HashMap[K, V] {
 	 * to the same bucket
 	 */
 	public def add(key:K, value:V) {
+		Console.OUT.println("Adding...");
 		val index = hash(key);
 		val entry = new Entry[K, V](key, value);
 		
@@ -99,6 +100,7 @@ public class HashMap[K, V] {
 		 * 	If rehashing is going on, duplicate all adds
 		 */
 		if( rehashing.get() ){
+			Console.OUT.println("Rehashing is going on. Duplicate add");
 			val rehash_index = hash_rehash(key);
 			val added_rehash = rehashMap(index).add(entry);
 			if(rehashMap(index).size() > 1 && added_rehash){
@@ -172,7 +174,7 @@ public class HashMap[K, V] {
 	
     private def rehash() {
     	
-    	//Console.OUT.println("Rehash was called. " + hashMap.size + " EntryCount: " + entryCount.get()); 
+    	Console.OUT.println("Rehash was called. " + hashMap.size + " EntryCount: " + entryCount.get()); 
     	
     	/*
     	 * Check if a thread attempted to call rehash, 
@@ -201,13 +203,15 @@ public class HashMap[K, V] {
         
         for( var i:Int = 0; i < hashMap.size; i++) {
                 val singleBucket:EntryList[K,V] = hashMap(i);
-                for( var j:Int = 0; j < singleBucket.size(); j++) {
-                	val entry = singleBucket.getHead().get();
+                var entry:Entry[K,V] = singleBucket.getHead().get();
+                while( entry != null ) {
                 	val index = hash_rehash(entry.getKey());
-                	val added = rehashMap(index).add(entry);
+                	val added = rehashMap(index).add(entry); 
+                	Console.OUT.println(entry + " " + index);
                 	if(rehashMap(index).size() > 1 && added){
                 		rehashNumCollisions.incrementAndGet();
                 	}
+                	entry = entry.next.get();
                 }
         }
         
@@ -233,7 +237,7 @@ public class HashMap[K, V] {
         rehashing.set(false);					
         inRehash.set(false);
         
-        //Console.OUT.println("Rehash done. EntryCount: " + entryCount.get() + " Size: " + hashMap.size);
+        Console.OUT.println("Rehash done. EntryCount: " + entryCount.get() + " Size: " + hashMap.size);
     }
 
 
