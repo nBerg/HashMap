@@ -2,7 +2,7 @@ import x10.util.concurrent.AtomicReference;
 import x10.util.concurrent.AtomicInteger;
 
 
-public class EntryList[K, V] {
+public class EntryList[K, V] {K haszero, V haszero} {
 
 	private var head:AtomicReference[Entry[K, V]];
 	private var tail:AtomicReference[Entry[K, V]];
@@ -12,12 +12,7 @@ public class EntryList[K, V] {
 	public def this() {
 		var sentinel:Entry[K, V];
 
-		try {
-			sentinel = new Entry[K, V]((0 as K), ("" as V));
-		} catch(e:Exception) {
-			Console.OUT.println("EXCEPTION: " + e);
-			sentinel = new Entry[K, V](("" as K), ("s" as V));
-		}
+		sentinel = new Entry[K, V]();
 		head = AtomicReference.newAtomicReference[Entry[K, V]](sentinel);
 		tail = AtomicReference.newAtomicReference[Entry[K, V]](sentinel);
 
