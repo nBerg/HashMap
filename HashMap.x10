@@ -85,9 +85,9 @@ public class HashMap[K, V]{K haszero, V haszero} {
 	 * to the same bucket
 	 */
 	public def add(key:K, value:V) {
-		val index = hash(key);
 		val entry = new Entry[K, V](key, value);
 		
+		val index = hash(key);
 		val added = hashMap(index).add(entry);
 
 		// We dont want to increment entry count if it was a duplicate
@@ -97,12 +97,9 @@ public class HashMap[K, V]{K haszero, V haszero} {
 		if (hashMap(index).size() > 1 && added)
 			numOfCollisions.incrementAndGet();
 
-		
-
-		// For rehashing - Not currently supported 
 		if (rehashing.get()) {
 			val rehash_index = hash_rehash(key);
-			val added_rehash = rehashMap(index).add(entry);
+			val added_rehash = rehashMap(index).add(new Entry(entry));
 			if(rehashMap(index).size() > 1 && added_rehash){
 				rehashNumCollisions.incrementAndGet();
 			}
@@ -116,15 +113,8 @@ public class HashMap[K, V]{K haszero, V haszero} {
 		val newLoadFactor = (entryCountNow as Float)/(hashMap.size);
 		curLoadFactor.compareAndSet(loadFactorBefore, newLoadFactor);
 
-
-		/* 
-		 * To turn rehashing on, uncomment this block
- 		 * if (curLoadFactor.get() > maxLoadFactor && !inRehash.get())
-		 *		rehash();
-		 *
-		 */
-		
-
+ 		if (curLoadFactor.get() > maxLoadFactor && !inRehash.get())
+ 				rehash();
 	}
 
 	/* 
@@ -214,18 +204,14 @@ public class HashMap[K, V]{K haszero, V haszero} {
         for( var i:Int = 0; i < hashMap.size; i++) {
                 val singleBucket:EntryList[K,V] = hashMap(i);
                 var entry:Entry[K,V] = singleBucket.getHead().get();
-                var prev:Entry[K,V];
                 entry = entry.next.get(); // Skip sentinel
                 while( entry != null ) {
                 	val index = hash_rehash(entry.getKey());	
-                	val added = rehashMap(index).add(entry); 
-                	//Console.OUT.println(entry + " " + index);
+                	val added = rehashMap(index).add(new Entry(entry)); 
                 	if(rehashMap(index).size() > 1 && added){
                 		rehashNumCollisions.incrementAndGet();
                 	}
-                	prev = entry;
                 	entry = entry.next.get();
-                	prev.next.set(null);
                 }
         }
         
@@ -251,7 +237,7 @@ public class HashMap[K, V]{K haszero, V haszero} {
         rehashing.set(false);					
         inRehash.set(false);
         
-        //Console.OUT.println("Rehash done. EntryCount: " + entryCount.get() + " Size: " + hashMap.size);
+        Console.OUT.println("Rehash done. EntryCount: " + entryCount.get() + " Size: " + hashMap.size);
     }
 
 

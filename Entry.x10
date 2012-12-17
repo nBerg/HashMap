@@ -13,6 +13,11 @@ public class Entry[K, V] {K haszero, V haszero}{
 		this.value = value;
 		//this.next = AtomicReference.newAtomicReference[Entry[K, V]](null);
 	}
+	
+	public def this(e:Entry[K,V]){
+		this.key = e.getKey();
+		this.value = e.getValue();
+	}
 
 	public def this() {
 		this.key = Zero.get[K]();

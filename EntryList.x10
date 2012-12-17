@@ -46,7 +46,6 @@ public class EntryList[K, V] {K haszero, V haszero} {
 
 				var p:Entry[K, V] = null;
 				var curr:Entry[K, V] = null;
-				var n:Entry[K, V] = null;
 
 OuterLoop:
 				do {
@@ -56,14 +55,10 @@ OuterLoop:
 						// Traverse the list, looking for the key
 						while (curr.next.get() != null) {
 								curr = curr.next.get();
-
-
-								/* Ilan made some changes here? */
+								/* Found key in HashMap already. Overwriting*/
 								if (curr.getKey().equals(entry.getKey())){
 										curr.setValue(entry.getValue());
-										if( p.next.compareAndSet(curr,curr) )
-												return false;
-										continue OuterLoop;
+										break OuterLoop;
 								}
 								p = curr;
 						}
@@ -86,18 +81,21 @@ OuterLoop:
 								}
 						} 
 
-						// curr is no longer the last element, tail pointer needs to be updated
+						// tail != curr, tail pointer needs to be updated
 						else {
-
 								//enqueue interrupted
-								if (tail.compareAndSet(t, curr))
+								if (tail.compareAndSet(t, curr)){
 										continue;
+								}
 
 								//dequeue interrupted
-								if (p.next.get() == null)
+								if (p.next.get() == null) {
 										tail.compareAndSet(curr, p);
-								else
-										tail.compareAndSet(t, curr);	
+										continue;
+								}
+								//tail.compareAndSet(t, curr);	
+								//continue;
+
 						}
 				} while (true);
 
@@ -176,30 +174,11 @@ OuterLoop:
 								if (curr.getKey().equals(key)) {
 										// Element found
 										return curr;
-
-										/* Do we need this??
-										   if(prev.next.compareAndSet(curr, curr))
-										   return curr;
-										   break;
-										 */
 								}
 
 								prev = curr;
 								curr = next.get();
 						}			
-
-						/* Cleanup!!!! - why do we need this??? */
-						val t = tail.get();
-						if (!tail.compareAndSet(prev, prev)) {							// Make sure we've reached the end of the list, not using old ref
-								if( t.next.get() == null){
-										tail.compareAndSet(t,prev);								//Deq hasnt updated tail yet, do it here
-										continue;
-								}
-								if ( t.next.get().equals(prev) ){ 							// some other thread has started an enqueue...
-										tail.compareAndSet(t,prev);								// Moving tail forward to 'p'
-								}						
-								continue;													// Prev wasn't tail, going back over the list again	
-						}
 
 						break;															// Didn't find anything
 
