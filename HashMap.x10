@@ -99,8 +99,8 @@ public class HashMap[K, V]{K haszero, V haszero} {
 
 		if (rehashing.get()) {
 			val rehash_index = hash_rehash(key);
-			val added_rehash = rehashMap(index).add(new Entry(entry));
-			if(rehashMap(index).size() > 1 && added_rehash){
+			val added_rehash = rehashMap(rehash_index).add(new Entry(entry));
+			if(rehashMap(rehash_index).size() > 1 && added_rehash){
 				rehashNumCollisions.incrementAndGet();
 			}
 		}
