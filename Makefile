@@ -8,7 +8,7 @@ perftests: PerformanceTest.x10 HashMap.x10
 	./PerformanceTest 50000 10 16	
 
 parfunc: ParFuncTest.x10 HashMap.x10
-        $(X10C) $(FLAGS) -o ParFuncTest ParFuncTest.x10
+	$(X10C) $(FLAGS) -o ParFuncTest ParFuncTest.x10
 
 functests: ParallelFunctionTest.x10 HashMap.x10
 	$(X10C) $(FLAGS) -o ParallelFunctionTest ParallelFunctionTest.x10
