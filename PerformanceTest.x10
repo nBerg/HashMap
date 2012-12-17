@@ -14,12 +14,13 @@ public class SerialPerformanceTest {
 		val loadSize = Int.parseInt(args(0));
 		val tests = Int.parseInt(args(1));
 		val asyncNum = Int.parseInt(args(2));
+		var base:Float = 1;
 
 		val r = new Random();
 
 
-		Console.OUT.println("TEST: Adding to HashMap only -- Trials: " + tests + " Asyncs: " + asyncNum + " Load: " + loadSize);
-		Console.OUT.println("Asyncs\t\tTime To Complete (ms)");
+		Console.OUT.println("TEST: Adding to HashMap only -- Trials: " + tests + " Load: " + loadSize);
+		Console.OUT.println("Asyncs\t\tTime To Complete (ms)\t\tSpeedup");
 		for(var asyncCount:Int = 1; asyncCount <= asyncNum; asyncCount *= 2) {
 			var sum:Int = 0;
 			for (var i:Int = 0; i < tests; i++){
@@ -36,14 +37,16 @@ public class SerialPerformanceTest {
 				sum += (end - begin);
 			}
 			val avg = (sum as Float)/tests;
-			Console.OUT.println(asyncCount + "\t\t" + avg);
+			if (asyncCount == 1) base = avg;
+			val speedup = base/avg;
+			Console.OUT.println(asyncCount + "\t\t" + avg + "\t\t" + speedup);
 		}
 
 
 		Console.OUT.println("");
 
-		Console.OUT.println("TEST: Getting from HashMap only -- Trials: " + tests + " Asyncs: " + asyncNum + " Load: " + loadSize);
-		Console.OUT.println("Asyncs\t\tTime To Complete (ms)");
+		Console.OUT.println("TEST: Getting from HashMap only -- Trials: " + tests + " Load: " + loadSize);
+		Console.OUT.println("Asyncs\t\tTime To Complete (ms)\t\tSpeedup");
 		for (var asyncCount:Int = 1; asyncCount <= asyncNum; asyncCount*=2) {
 			var sum:Int = 0;
 			for (var i:Int = 0; i < tests; i++) {
@@ -60,13 +63,15 @@ public class SerialPerformanceTest {
 				sum += (end - begin);
 			}
 			val avg = (sum as Float)/tests;
-			Console.OUT.println(asyncCount + "\t\t" + avg);
+			if (asyncCount == 1) base = avg;
+			val speedup = base/avg;
+			Console.OUT.println(asyncCount + "\t\t" + avg + "\t\t" + speedup);
 		}
 
 		Console.OUT.println("");
 
-		Console.OUT.println("TEST: Adding/Getting to/from HashMap -- Trials: " + tests + " Asyncs: " + asyncNum + " Load: " + loadSize);
-		Console.OUT.println("Asyncs\t\tTime To Complete (ms)");
+		Console.OUT.println("TEST: Adding/Getting to/from HashMap -- Trials: " + tests + " Load: " + loadSize + " (* 2)");
+		Console.OUT.println("Asyncs\t\tTime To Complete (ms)\t\tSpeedup");
 		for (var asyncCount:Int = 1; asyncCount <= asyncNum; asyncCount*=2) {
 			var sum:Int = 0;
 			for (var i:Int = 0; i < tests; i++) {
@@ -76,7 +81,7 @@ public class SerialPerformanceTest {
 					async {
 						/* Note: This is doing double the work. loadSize reads and loadSize writes */
 						for (var k:Int = 0; k < loadSize/asyncCount; k++) {
-							map.add(r.nextInt(len),"test"+k+""+Runtime.workerId());
+							map.add(r.nextInt(len),"test"+k);
 							map.get(r.nextInt(len));
 						}
 					}
@@ -85,7 +90,9 @@ public class SerialPerformanceTest {
 				sum += (end - begin);
 			}
 			val avg = (sum as Float)/tests;
-			Console.OUT.println(asyncCount + "\t\t" + avg);
+			if (asyncCount == 1) base = avg;
+			val speedup = base/avg;
+			Console.OUT.println(asyncCount + "\t\t" + avg + "\t\t" + speedup);
 		}
 
 	}

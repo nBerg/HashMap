@@ -60,9 +60,7 @@ public class HashMap[K, V]{K haszero, V haszero} {
 		return entryCount.get();
 	}
 
-	/* Hashing function. Each key gets it's own hashCode,
-	 * but different items may return the same hashVal
-	 */
+	/* Hash function */
 	public def hash(key:K) {
 		var hashVal:Int = key.hashCode() % hashMap.size;
 		if (hashVal < 0)
@@ -71,6 +69,8 @@ public class HashMap[K, V]{K haszero, V haszero} {
 		return hashVal;
 	}
 	
+
+	/* Used for rehashing - Not currently supported */
 	public def hash_rehash(key:K) {
 		var hashVal:Int = key.hashCode() % rehashMap.size;
 		if (hashVal < 0)
@@ -79,30 +79,28 @@ public class HashMap[K, V]{K haszero, V haszero} {
 		return hashVal;
 	}
 
-	/* Add a key with a value to the map
+	/* 
+	 * Add a key,value pair to the map
 	 * Items with same hashVal are indexed
 	 * to the same bucket
 	 */
 	public def add(key:K, value:V) {
-		Console.OUT.println("Adding...");
 		val index = hash(key);
 		val entry = new Entry[K, V](key, value);
 		
-		Console.OUT.println("Adding2...");
 		val added = hashMap(index).add(entry);
-		Console.OUT.println("Adding3...");
-		if( added )
+
+		// We dont want to increment entry count if it was a duplicate
+		if (added)
 			entryCount.incrementAndGet(); 
 		
-		if(hashMap(index).size() > 1 && added){
+		if (hashMap(index).size() > 1 && added)
 			numOfCollisions.incrementAndGet();
-		}
+
 		
-		/*
-		 * 	If rehashing is going on, duplicate all adds
-		 */
-		if( rehashing.get() ){
-			Console.OUT.println("Rehashing is going on. Duplicate add");
+
+		// For rehashing - Not currently supported 
+		if (rehashing.get()) {
 			val rehash_index = hash_rehash(key);
 			val added_rehash = rehashMap(index).add(entry);
 			if(rehashMap(index).size() > 1 && added_rehash){
@@ -111,18 +109,26 @@ public class HashMap[K, V]{K haszero, V haszero} {
 		}
 	
 		
-		val loadFactorBefore = curLoadFactor.get();						// Protection against clear() method being called
+		val loadFactorBefore = curLoadFactor.get();	
+
+		// For rehashing - Not supported
 		val entryCountNow = entryCount.get();
 		val newLoadFactor = (entryCountNow as Float)/(hashMap.size);
-		curLoadFactor.compareAndSet(loadFactorBefore, newLoadFactor); 	// Doesnt matter was curLoadFactor is
+		curLoadFactor.compareAndSet(loadFactorBefore, newLoadFactor);
 
-		if (curLoadFactor.get() > maxLoadFactor && !inRehash.get())
-			rehash();
+
+		/* 
+		 * To turn rehashing on, uncomment this block
+ 		 * if (curLoadFactor.get() > maxLoadFactor && !inRehash.get())
+		 *		rehash();
+		 *
+		 */
 		
 
 	}
 
-	/* Return item user is looking for
+	/* 
+	 * Return item user is looking for
 	 * Returns null if not found 
 	 */
 	public def get(key:K) {
@@ -138,7 +144,10 @@ public class HashMap[K, V]{K haszero, V haszero} {
 
 	}
 
-	/* Tests if map contains key */
+	/* 
+	 * Tests if map contains a key 
+	 * If yes, returns true, else returns false
+	 */
 	public def contains(key:K) {
 		if (isEmpty())
 			return false;
@@ -150,7 +159,7 @@ public class HashMap[K, V]{K haszero, V haszero} {
 
 	}
 
-	/* Remove the key from the map bucket*/
+	/* Remove the key (and its value) from the map */
 	public def remove(key:K) {
 		if (isEmpty())
 			return;
@@ -160,12 +169,11 @@ public class HashMap[K, V]{K haszero, V haszero} {
 		var entry:Entry[K, V];
 
 		val retVal = bucket.remove(key);
-		if( !retVal.equals("") ) 
+		if (retVal != null && !retVal.equals(Zero.get[V]())) 
 			entryCount.decrementAndGet();
 		
-		/*
-		 * Remove from rehashMap if rehashing is taking place
-		 */
+		
+		// For rehasing - not currently supported
 		if( rehashing.get() ){
 			val rehash_index = hash_rehash(key);
 			val rehash_bucket = rehashMap(rehash_index);
@@ -174,15 +182,15 @@ public class HashMap[K, V]{K haszero, V haszero} {
 	}
 
 	
+	/* Rehash function - not functional */
     private def rehash() {
     	
-    	Console.OUT.println("Rehash was called. " + hashMap.size + " EntryCount: " + entryCount.get()); 
     	
     	/*
     	 * Check if a thread attempted to call rehash, 
     	 * 	while another thread is rehashing
     	 */
-    	if( !inRehash.compareAndSet(false,true) ){
+    	if (!inRehash.compareAndSet(false,true)) {
     		//Console.OUT.println("MULTIPLE ATTEMPTS TO CALL REHASH");
     		return;
     	}
@@ -211,7 +219,7 @@ public class HashMap[K, V]{K haszero, V haszero} {
                 while( entry != null ) {
                 	val index = hash_rehash(entry.getKey());	
                 	val added = rehashMap(index).add(entry); 
-                	Console.OUT.println(entry + " " + index);
+                	//Console.OUT.println(entry + " " + index);
                 	if(rehashMap(index).size() > 1 && added){
                 		rehashNumCollisions.incrementAndGet();
                 	}
@@ -243,7 +251,7 @@ public class HashMap[K, V]{K haszero, V haszero} {
         rehashing.set(false);					
         inRehash.set(false);
         
-        Console.OUT.println("Rehash done. EntryCount: " + entryCount.get() + " Size: " + hashMap.size);
+        //Console.OUT.println("Rehash done. EntryCount: " + entryCount.get() + " Size: " + hashMap.size);
     }
 
 
@@ -257,6 +265,8 @@ public class HashMap[K, V]{K haszero, V haszero} {
 		entryCount.set(0);
 		curLoadFactor.set(0);
 		
+
+		// For rehashing - currently not supported
 		if( rehashing.get() ){
 			/*  This is for the case where clear gets called in
 			 *  in between the clearFlag.get() and hashMap = rehashMap
@@ -275,40 +285,23 @@ public class HashMap[K, V]{K haszero, V haszero} {
 		}
 	}
 
-	/* Display map */
-	public def printMap(){
-/*		Console.OUT.println("Key\tValue");
-		var entry:Entry[K, V];
-		for(var i:Int = 0; i < tableSize; i++){
-			val bucket = hashMap(i);
-			for(var j:Int = 0; j < bucket.size(); j++){
-				entry = bucket(j);
-				Console.OUT.println(entry.getKey() + "\t" + entry.getValue());
-			}
-		}
-*/
-	}
-
 	public def getLoad() {
 		return curLoadFactor.get();
 	}
-
-	//public def getTableSize() {
-	//	return tableSize.get();
-	//}
 
 	public def getNumCollisions() {
 		return numOfCollisions.get();
 	}
 
-	/* Print map stats */
+	/* 
+	 * Get some stats on the map.
+	 * Returns a string that can be printed
+	 */
 	public def getStats(){
 		var statStr:String = "";
 		statStr += "Stats:\n";
-		//statStr += "TableSize:\t" + tableSize + "\n";
 		statStr += "Total No. of Entries:\t" + entryCount + "\n";
 		statStr += "Total No. of Collision:\t" + numOfCollisions + "\n";
-		//statStr += String.format("Current Load Factor (CLF):\t%.4f\n", new Array[Any](1,curLoadFactor));
 		statStr += "Times rehashed:\t" + timesRehashed + "\n";
 		
 		return statStr;
