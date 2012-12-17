@@ -49,13 +49,10 @@ public class EntryList[K, V] {K haszero, V haszero} {
 		OuterLoop:
 			do {
 				p = head.get();
-				curr = p.next.get();
+				curr = p;
 
-				//check this
-				if (curr == null) n = null;
-				else n = curr.next.get();
-
-				while (curr != null) {
+				while (curr.next.get() != null) {
+					curr = curr.next.get();
 					
 					if (curr.getKey().equals(entry.getKey())){
 						// FIXME: Not safe
@@ -65,21 +62,25 @@ public class EntryList[K, V] {K haszero, V haszero} {
 						continue OuterLoop;							// Something changed, go back around again -- UNCLEAR what this mean if we reach this statement
 					}
 					p = curr;
-					curr = n;
-					n = curr.next.get();
 				}
 						
 				Console.OUT.println("ENQ Checking if tail == p. P = " + p + " Tail: " + tail.get() + " ID:" +Runtime.workerId());
 				Console.OUT.println("ENQ Adding E: " + e + " ID:" +Runtime.workerId());
 				
 				val t = tail.get();
-				if( tail.get() != t ) continue;									// Tail changed already
-				if( tail.compareAndSet(curr, curr) ){									//Check to make sure tail is the same.	
-					if (curr.next.compareAndSet(null, e) ){ 						// Add entry to end of the list	
+				Console.OUT.println("here1");
+				if( tail.get() != t ) {
+						Console.OUT.println("here2");
+						continue;								// Tail changed already
+				}
+				if( tail.compareAndSet(curr, curr) ) {									//Check to make sure tail is the same.	
+					Console.OUT.println("here3");
+					if (t.next.compareAndSet(null, e) ){ 						// Add entry to end of the list	
 						Console.OUT.println("ENQ Set e properly. Breaking E=" + e + " ID:" +Runtime.workerId());
 						break OuterLoop; 										// First part done
 					}
-					tail.compareAndSet(curr, curr.next.get());
+					Console.OUT.println("here4");
+					//tail.compareAndSet(curr, curr.next.get());
 				} 
 				//Something changed...p != tail...check if we can 'help' out
 				else {
