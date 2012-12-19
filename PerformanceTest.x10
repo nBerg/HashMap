@@ -9,7 +9,7 @@ public class PerformanceTest {
 			return;
 		}
 
-		val len = 10007; /* Prime number */
+		val len = 1000007; /* Prime number */
 		val loadFactor = 0.75f;
 		val loadSize = Int.parseInt(args(0));
 		val tests = Int.parseInt(args(1));
