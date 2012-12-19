@@ -5,7 +5,7 @@ EXES=$(SRCS:.x10=)
 
 perftests: PerformanceTest.x10 HashMap.x10
 	$(X10C) $(FLAGS) -o PerformanceTest PerformanceTest.x10
-	./PerformanceTest 50000 10 16	
+	./PerformanceTest 1000000 10 16	
 
 parfunc: ParFuncTest.x10 HashMap.x10
 	$(X10C) $(FLAGS) -o ParFuncTest ParFuncTest.x10

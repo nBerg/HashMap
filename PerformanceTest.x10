@@ -18,13 +18,14 @@ public class PerformanceTest {
 
 		val r = new Random();
 
-
+		var map:HashMap[Int,String] = new HashMap[Int,String](len,loadFactor);;
+		
 		Console.OUT.println("TEST: Adding to HashMap only -- Trials: " + tests + " Load: " + loadSize);
 		Console.OUT.println("Asyncs\t\tTime To Complete (ms)\t\tSpeedup");
 		for(var asyncCount:Int = 1; asyncCount <= asyncNum; asyncCount *= 2) {
 			var sum:Int = 0;
 			for (var i:Int = 0; i < tests; i++){
-				val map = new HashMap[Int, String](len, loadFactor); 
+				map = new HashMap[Int, String](len, loadFactor); 
 				val begin = Timer.milliTime(); 
 				finish for (var j:Int = 0; j < asyncCount; j++) {
 					async {
@@ -50,7 +51,7 @@ public class PerformanceTest {
 		for (var asyncCount:Int = 1; asyncCount <= asyncNum; asyncCount*=2) {
 			var sum:Int = 0;
 			for (var i:Int = 0; i < tests; i++) {
-				val map = new HashMap[Int, String](len, loadFactor);
+				//val map = new HashMap[Int, String](len, loadFactor);
 				val begin = Timer.milliTime(); 
 				finish for (var j:Int = 0; j < asyncCount; j++) {
 					async {
@@ -75,7 +76,7 @@ public class PerformanceTest {
 		for (var asyncCount:Int = 1; asyncCount <= asyncNum; asyncCount*=2) {
 			var sum:Int = 0;
 			for (var i:Int = 0; i < tests; i++) {
-				val map = new HashMap[Int, String](len, loadFactor);
+				map = new HashMap[Int, String](len, loadFactor);
 				val begin = Timer.milliTime(); 
 				finish for (var j:Int = 0; j < asyncCount; j++) {
 					async {
